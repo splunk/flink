@@ -21,7 +21,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<artifactId>flink-filesystems</artifactId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
@@ -62,7 +62,7 @@ under the License.
 		<!-- Flink core -->
 
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-core</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
@@ -71,7 +71,7 @@ under the License.
 		<!-- File system builds on the Hadoop file system support -->
 
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-hadoop-fs</artifactId>
 			<version>${project.version}</version>
 

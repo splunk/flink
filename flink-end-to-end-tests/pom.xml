@@ -23,7 +23,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<artifactId>flink-parent</artifactId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
@@ -94,7 +94,7 @@ under the License.
 	<dependencies>
 		<dependency>
 			<!-- this module depends on the flink-yarn-tests's "target/yarn.classpath" file -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-yarn-tests</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>

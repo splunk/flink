@@ -21,7 +21,7 @@ under the License.
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>flink-end-to-end-tests</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -32,7 +32,7 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-table-common</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
@@ -46,7 +46,7 @@ under the License.
  			dependency-plugin configuration) are built before this module. -->
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-avro</artifactId>
 			<version>${project.version}</version>
 			<classifier>sql-jar</classifier>
@@ -54,7 +54,7 @@ under the License.
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-json</artifactId>
 			<version>${project.version}</version>
 			<classifier>sql-jar</classifier>
@@ -62,7 +62,7 @@ under the License.
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-csv</artifactId>
 			<version>${project.version}</version>
 			<classifier>sql-jar</classifier>
@@ -70,35 +70,35 @@ under the License.
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-kafka-0.10_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-kafka-0.11_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-kafka_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-elasticsearch6_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-elasticsearch7_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
@@ -154,38 +154,38 @@ under the License.
 								for the respective module. -->
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-avro</artifactId>
 									<version>${project.version}</version>
 									<classifier>sql-jar</classifier>
 									<type>jar</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-sql-connector-kafka-0.10_${scala.binary.version}</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-sql-connector-kafka-0.11_${scala.binary.version}</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-sql-connector-kafka_${scala.binary.version}</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-sql-connector-elasticsearch6_${scala.binary.version}</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>
 								</artifactItem>
 								<artifactItem>
-									<groupId>org.apache.flink</groupId>
+									<groupId>com.splunk.flink</groupId>
 									<artifactId>flink-sql-connector-elasticsearch7_${scala.binary.version}</artifactId>
 									<version>${project.version}</version>
 									<type>jar</type>

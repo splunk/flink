@@ -26,7 +26,7 @@ under the License.
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.apache.flink</groupId>
+	<groupId>com.splunk.flink</groupId>
 	<artifactId>flink-parent</artifactId>
 	<version>1.11-SNAPSHOT</version>
 
@@ -44,9 +44,9 @@ under the License.
 	</licenses>
 
 	<scm>
-		<url>https://github.com/apache/flink</url>
-		<connection>git@github.com:apache/flink.git</connection>
-		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/flink.git</developerConnection>
+		<url>https://github.com/splunk/flink</url>
+		<connection>git@github.com:splunk/flink.git</connection>
+		<developerConnection>scm:git:https://github.com/splunk/flink.git</developerConnection>
 	</scm>
 
 	<modules>
@@ -161,7 +161,7 @@ under the License.
 	<dependencies>
 
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>force-shading</artifactId>
 			<version>1.11-SNAPSHOT</version>
 		</dependency>
@@ -804,7 +804,7 @@ under the License.
 			</dependency>
 
 			<dependency>
-				<groupId>org.apache.flink</groupId>
+				<groupId>com.splunk.flink</groupId>
 				<artifactId>flink-test-utils-junit</artifactId>
 				<version>${project.version}</version>
 				<scope>test</scope>
@@ -1298,6 +1298,17 @@ under the License.
 				</plugins>
 				<pluginManagement>
 					<plugins>
+<!--						<plugin>-->
+<!--							<groupId>org.sonatype.plugins</groupId>-->
+<!--							<artifactId>nexus-staging-maven-plugin</artifactId>-->
+<!--							<version>1.6.7</version>-->
+<!--							<extensions>true</extensions>-->
+<!--							<configuration>-->
+<!--								<serverId>ossrh</serverId>-->
+<!--								<nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
+<!--								<autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+<!--							</configuration>-->
+<!--						</plugin>-->
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-release-plugin</artifactId>
@@ -1947,7 +1958,7 @@ under the License.
 					<configuration>
 						<oldVersion>
 							<dependency>
-								<groupId>org.apache.flink</groupId>
+								<groupId>com.splunk.flink</groupId>
 								<artifactId>${project.artifactId}</artifactId>
 								<version>${japicmp.referenceVersion}</version>
 								<type>${project.packaging}</type>
@@ -1995,7 +2006,7 @@ under the License.
 						<projectBuildDir>${rootDir}/${japicmp.outputDir}/${project.artifactId}</projectBuildDir>
 						<dependencies>
 							<dependency>
-								<groupId>org.apache.flink</groupId>
+								<groupId>com.splunk.flink</groupId>
 								<artifactId>flink-annotations</artifactId>
 								<version>${project.version}</version>
 							</dependency>
@@ -2031,5 +2042,14 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
-
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh-staging</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

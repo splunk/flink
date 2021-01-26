@@ -22,7 +22,7 @@ under the License.
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>flink-end-to-end-tests</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -31,12 +31,12 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-end-to-end-tests-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-test-utils-junit</artifactId>
 			<scope>compile</scope>
 		</dependency>
@@ -47,7 +47,7 @@ under the License.
 
 		<!-- Need the three Kafka jar version to run the E2E Kafka tests -->
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-streaming-kafka010-test_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<!-- ensure the test jars are built beforehand -->
@@ -55,13 +55,13 @@ under the License.
 			<exclusions>
 				<exclusion>
 					<!-- For dependency convergence; conflicting dependencies are not loaded at the same time -->
-					<groupId>org.apache.flink</groupId>
+					<groupId>com.splunk.flink</groupId>
 					<artifactId>flink-connector-kafka-0.10_${scala.binary.version}</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-streaming-kafka011-test_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<!-- ensure the test jars are built beforehand -->
@@ -69,13 +69,13 @@ under the License.
 			<exclusions>
 				<exclusion>
 					<!-- For dependency convergence; conflicting dependencies are not loaded at the same time -->
-					<groupId>org.apache.flink</groupId>
+					<groupId>com.splunk.flink</groupId>
 					<artifactId>flink-connector-kafka-0.11_${scala.binary.version}</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-streaming-kafka-test_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<!-- ensure the test jars are built beforehand -->
@@ -83,7 +83,7 @@ under the License.
 			<exclusions>
 				<exclusion>
 					<!-- For dependency convergence; conflicting dependencies are not loaded at the same time -->
-					<groupId>org.apache.flink</groupId>
+					<groupId>com.splunk.flink</groupId>
 					<artifactId>flink-connector-kafka-_${scala.binary.version}</artifactId>
 				</exclusion>
 			</exclusions>
@@ -96,14 +96,14 @@ under the License.
 			This ensures that all modules we actually need (as defined by the
  			dependency-plugin configuration) are built before this module. -->
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-client-test</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-avro</artifactId>
 			<version>${project.version}</version>
 			<classifier>sql-jar</classifier>
@@ -111,14 +111,14 @@ under the License.
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-kafka-0.10_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<!-- Used by maven-dependency-plugin -->
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-connector-kafka-0.11_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
@@ -142,7 +142,7 @@ under the License.
 				<configuration>
 					<artifactItems>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-streaming-kafka010-test_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<type>jar</type>
@@ -150,7 +150,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-streaming-kafka011-test_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<type>jar</type>
@@ -158,7 +158,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-streaming-kafka-test_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<type>jar</type>
@@ -167,7 +167,7 @@ under the License.
 						</artifactItem>
 
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-sql-client-test</artifactId>
 							<version>${project.version}</version>
 							<destFileName>SqlToolbox.jar</destFileName>
@@ -175,7 +175,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-avro</artifactId>
 							<version>${project.version}</version>
 							<classifier>sql-jar</classifier>
@@ -184,7 +184,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-sql-connector-kafka-0.10_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<destFileName>sql-kafka-0.10.jar</destFileName>
@@ -192,7 +192,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-sql-connector-kafka-0.11_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<destFileName>sql-kafka-0.11.jar</destFileName>
@@ -200,7 +200,7 @@ under the License.
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 						</artifactItem>
 						<artifactItem>
-							<groupId>org.apache.flink</groupId>
+							<groupId>com.splunk.flink</groupId>
 							<artifactId>flink-sql-connector-kafka_${scala.binary.version}</artifactId>
 							<version>${project.version}</version>
 							<destFileName>sql-kafka.jar</destFileName>
