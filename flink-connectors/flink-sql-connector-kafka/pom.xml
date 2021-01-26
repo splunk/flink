@@ -25,7 +25,7 @@ under the License.
 
 	<parent>
 		<artifactId>flink-connectors</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
@@ -37,7 +37,7 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>

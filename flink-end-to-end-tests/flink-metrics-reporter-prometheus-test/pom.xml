@@ -21,7 +21,7 @@ under the License.
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<artifactId>flink-end-to-end-tests</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
@@ -32,13 +32,13 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-core</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-metrics-prometheus_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
@@ -55,13 +55,13 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-end-to-end-tests-common</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-test-utils-junit</artifactId>
 		</dependency>
 	</dependencies>

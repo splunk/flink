@@ -24,7 +24,7 @@ under the License.
 
 	<parent>
 		<artifactId>flink-external-resources</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
@@ -36,14 +36,14 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-core</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-test-utils-junit</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

@@ -21,7 +21,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<artifactId>flink-table</artifactId>
 		<version>1.11-SNAPSHOT</version>
 		<relativePath>..</relativePath>
@@ -38,23 +38,23 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-table-api-scala_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-scala_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-table-api-java</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>

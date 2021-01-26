@@ -23,7 +23,7 @@ under the License.
 
 	<parent>
 		<artifactId>flink-table</artifactId>
-		<groupId>org.apache.flink</groupId>
+		<groupId>com.splunk.flink</groupId>
 		<version>1.11-SNAPSHOT</version>
 	</parent>
 
@@ -40,13 +40,13 @@ under the License.
 	<dependencies>
 		<!-- depend on flink-sql-parser and explicitly define its provided deps -->
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-sql-parser</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.flink</groupId>
+			<groupId>com.splunk.flink</groupId>
 			<artifactId>flink-table-common</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>

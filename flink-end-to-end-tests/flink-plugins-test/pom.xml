@@ -24,7 +24,7 @@ under the License.
 
     <parent>
         <artifactId>flink-end-to-end-tests</artifactId>
-        <groupId>org.apache.flink</groupId>
+        <groupId>com.splunk.flink</groupId>
         <version>1.11-SNAPSHOT</version>
     </parent>
 

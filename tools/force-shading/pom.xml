@@ -36,7 +36,7 @@ under the License.
 	and thus be suffixed along with all other modules.
 	-->
 
-	<groupId>org.apache.flink</groupId>
+	<groupId>com.splunk.flink</groupId>
 	<artifactId>force-shading</artifactId>
 	<version>1.11-SNAPSHOT</version>
 
@@ -87,6 +87,17 @@ under the License.
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.7</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
 				</plugins>
 				<pluginManagement>
 					<plugins>
@@ -100,10 +111,21 @@ under the License.
 								<arguments>${arguments} -Psonatype-oss-release</arguments>
 							</configuration>
 						</plugin>
+
 					</plugins>
 				</pluginManagement>
 			</build>
 		</profile>
 	</profiles>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh-staging</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>
