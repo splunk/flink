@@ -113,8 +113,10 @@ public class ZooKeeperRunningJobsRegistry implements RunningJobsRegistry {
 
         try {
             final String zkPath = createZkPath(jobID);
-            this.client.newNamespaceAwareEnsurePath(zkPath).ensure(client.getZookeeperClient());
-            this.client.delete().forPath(zkPath);
+            final Stat stat = this.client.checkExists().forPath(zkPath);
+            if (stat != null) {
+                this.client.delete().forPath(zkPath);
+            }
         } catch (Exception e) {
             throw new IOException("Failed to clear job state from ZooKeeper for job " + jobID, e);
         }
@@ -127,7 +129,11 @@ public class ZooKeeperRunningJobsRegistry implements RunningJobsRegistry {
     private void writeEnumToZooKeeper(JobID jobID, JobSchedulingStatus status) throws Exception {
         LOG.debug("Setting scheduling state for job {} to {}.", jobID, status);
         final String zkPath = createZkPath(jobID);
-        this.client.newNamespaceAwareEnsurePath(zkPath).ensure(client.getZookeeperClient());
-        this.client.setData().forPath(zkPath, status.name().getBytes(ENCODING));
+        final Stat stat = this.client.checkExists().forPath(zkPath);
+        if (stat != null) {
+            this.client.setData().forPath(zkPath, status.name().getBytes(ENCODING));
+        } else {
+            this.client.create().creatingParentContainersIfNeeded().forPath(zkPath, status.name().getBytes(ENCODING));
+        }
     }
 }
