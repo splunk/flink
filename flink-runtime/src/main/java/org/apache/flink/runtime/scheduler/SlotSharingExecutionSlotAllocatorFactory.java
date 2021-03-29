@@ -63,7 +63,11 @@ class SlotSharingExecutionSlotAllocatorFactory implements ExecutionSlotAllocator
 
     @Override
     public ExecutionSlotAllocator createInstance(final ExecutionSlotAllocationContext context) {
-        SlotSharingStrategy slotSharingStrategy = new NoSharingSlotSharingStrategy();
+        SlotSharingStrategy slotSharingStrategy =
+                slotSharingStrategyFactory.create(
+                        context.getSchedulingTopology(),
+                        context.getLogicalSlotSharingGroups(),
+                        context.getCoLocationGroups());
         SyncPreferredLocationsRetriever preferredLocationsRetriever =
                 new DefaultSyncPreferredLocationsRetriever(context, context);
         SharedSlotProfileRetrieverFactory sharedSlotProfileRetrieverFactory =
