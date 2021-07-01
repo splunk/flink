@@ -33,21 +33,25 @@ class SlotSharingExecutionSlotAllocatorFactory implements ExecutionSlotAllocator
 
     private final Time allocationTimeout;
 
+    private final SlotSharingStrategy.Factory slotSharingStrategyFactory;
+
     SlotSharingExecutionSlotAllocatorFactory(
             PhysicalSlotProvider slotProvider,
             boolean slotWillBeOccupiedIndefinitely,
             PhysicalSlotRequestBulkChecker bulkChecker,
-            Time allocationTimeout) {
+            Time allocationTimeout,
+            SlotSharingStrategy.Factory slotSharingStrategyFactory) {
         this.slotProvider = slotProvider;
         this.slotWillBeOccupiedIndefinitely = slotWillBeOccupiedIndefinitely;
         this.bulkChecker = bulkChecker;
         this.allocationTimeout = allocationTimeout;
+        this.slotSharingStrategyFactory = slotSharingStrategyFactory;
     }
 
     @Override
     public ExecutionSlotAllocator createInstance(final ExecutionSlotAllocationContext context) {
         SlotSharingStrategy slotSharingStrategy =
-                new LocalInputPreferredSlotSharingStrategy(
+                slotSharingStrategyFactory.create(
                         context.getSchedulingTopology(),
                         context.getLogicalSlotSharingGroups(),
                         context.getCoLocationGroups());
