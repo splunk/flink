@@ -73,16 +73,25 @@ public class ZooKeeperRegistryTest extends TestLogger {
 
         try {
             JobID jobID = JobID.generate();
+            // status when there is no node
             assertEquals(JobSchedulingStatus.PENDING, zkRegistry.getJobSchedulingStatus(jobID));
 
+            // clear works when there is no node
+            zkRegistry.clearJob(jobID);
+            assertEquals(JobSchedulingStatus.PENDING, zkRegistry.getJobSchedulingStatus(jobID));
+
+            // verifies setting data when there is no node
             zkRegistry.setJobRunning(jobID);
             assertEquals(JobSchedulingStatus.RUNNING, zkRegistry.getJobSchedulingStatus(jobID));
 
+            // verifies setting data when there is a node
             zkRegistry.setJobFinished(jobID);
             assertEquals(JobSchedulingStatus.DONE, zkRegistry.getJobSchedulingStatus(jobID));
 
+            // clear works when there is a node
             zkRegistry.clearJob(jobID);
             assertEquals(JobSchedulingStatus.PENDING, zkRegistry.getJobSchedulingStatus(jobID));
+
         } finally {
             zkHaService.close();
         }
