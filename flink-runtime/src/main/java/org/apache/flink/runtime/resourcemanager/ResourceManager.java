@@ -1212,7 +1212,10 @@ public abstract class ResourceManager<WorkerType extends ResourceIDRetrievable>
 
         confirmationFuture.whenComplete(
                 (Void ignored, Throwable throwable) -> {
-                    log.info("Dispatcher {} completed job recovery and leadership confirmation with fencing token {}", getAddress(), newLeaderSessionID);
+                    log.info(
+                            "Dispatcher {} completed job recovery and leadership confirmation with fencing token {}",
+                            getAddress(),
+                            newLeaderSessionID);
                     if (throwable != null) {
                         onFatalError(ExceptionUtils.stripCompletionException(throwable));
                     }
