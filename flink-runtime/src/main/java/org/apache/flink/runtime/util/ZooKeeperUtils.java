@@ -153,9 +153,10 @@ public class ZooKeeperUtils {
                         .retryPolicy(new ExponentialBackoffRetry(retryWait, maxRetryAttempts))
                         // Curator prepends a '/' manually and throws an Exception if the
                         // namespace starts with a '/'.
-                        .namespace(rootWithNamespace.startsWith("/")
-                                ? rootWithNamespace.substring(1)
-                                : rootWithNamespace)
+                        .namespace(
+                                rootWithNamespace.startsWith("/")
+                                        ? rootWithNamespace.substring(1)
+                                        : rootWithNamespace)
                         .aclProvider(aclProvider);
 
         if (configuration.get(HighAvailabilityOptions.ZOOKEEPER_TOLERATE_SUSPENDED_CONNECTIONS)) {
@@ -265,7 +266,8 @@ public class ZooKeeperUtils {
                             .ON_SUSPENDED_CONNECTION;
         }
 
-        return new ZooKeeperLeaderRetrievalDriverFactory(client, leaderPath, leaderInformationClearancePolicy);
+        return new ZooKeeperLeaderRetrievalDriverFactory(
+                client, leaderPath, leaderInformationClearancePolicy);
     }
 
     /**
