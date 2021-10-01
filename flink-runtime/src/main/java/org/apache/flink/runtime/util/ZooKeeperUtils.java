@@ -54,6 +54,7 @@ import org.apache.flink.shaded.curator4.org.apache.curator.framework.CuratorFram
 import org.apache.flink.shaded.curator4.org.apache.curator.framework.api.ACLProvider;
 import org.apache.flink.shaded.curator4.org.apache.curator.framework.imps.DefaultACLProvider;
 import org.apache.flink.shaded.curator4.org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.flink.shaded.curator4.org.apache.curator.framework.state.SessionConnectionStateErrorPolicy;
 import org.apache.flink.shaded.curator4.org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.flink.shaded.zookeeper3.org.apache.zookeeper.ZooDefs;
 import org.apache.flink.shaded.zookeeper3.org.apache.zookeeper.data.ACL;
@@ -66,6 +67,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -144,7 +147,7 @@ public class ZooKeeperUtils {
 
         LOG.info("Using '{}' as Zookeeper namespace.", rootWithNamespace);
 
-        CuratorFramework cf =
+        final CuratorFrameworkFactory.Builder curatorFrameworkBuilder =
                 CuratorFrameworkFactory.builder()
                         .connectString(zkQuorum)
                         .sessionTimeoutMs(sessionTimeout)
@@ -152,12 +155,15 @@ public class ZooKeeperUtils {
                         .retryPolicy(new ExponentialBackoffRetry(retryWait, maxRetryAttempts))
                         // Curator prepends a '/' manually and throws an Exception if the
                         // namespace starts with a '/'.
-                        .namespace(
-                                rootWithNamespace.startsWith("/")
-                                        ? rootWithNamespace.substring(1)
-                                        : rootWithNamespace)
-                        .aclProvider(aclProvider)
-                        .build();
+                        .namespace(trimStartingSlash(rootWithNamespace))
+                        .aclProvider(aclProvider);
+
+        if (configuration.get(HighAvailabilityOptions.ZOOKEEPER_TOLERATE_SUSPENDED_CONNECTIONS)) {
+            curatorFrameworkBuilder.connectionStateErrorPolicy(
+                    new SessionConnectionStateErrorPolicy());
+        }
+
+        CuratorFramework cf = curatorFrameworkBuilder.build();
 
         cf.start();
 
@@ -245,7 +251,22 @@ public class ZooKeeperUtils {
         final String leaderPath =
                 configuration.getString(HighAvailabilityOptions.HA_ZOOKEEPER_LEADER_PATH)
                         + pathSuffix;
-        return new ZooKeeperLeaderRetrievalDriverFactory(client, leaderPath);
+
+        final ZooKeeperLeaderRetrievalDriver.LeaderInformationClearancePolicy
+                leaderInformationClearancePolicy;
+
+        if (configuration.get(HighAvailabilityOptions.ZOOKEEPER_TOLERATE_SUSPENDED_CONNECTIONS)) {
+            leaderInformationClearancePolicy =
+                    ZooKeeperLeaderRetrievalDriver.LeaderInformationClearancePolicy
+                            .ON_LOST_CONNECTION;
+        } else {
+            leaderInformationClearancePolicy =
+                    ZooKeeperLeaderRetrievalDriver.LeaderInformationClearancePolicy
+                            .ON_SUSPENDED_CONNECTION;
+        }
+
+        return new ZooKeeperLeaderRetrievalDriverFactory(
+                client, leaderPath, leaderInformationClearancePolicy);
     }
 
     /**
@@ -466,20 +487,38 @@ public class ZooKeeperUtils {
                 prefix);
     }
 
-    public static String generateZookeeperPath(String root, String namespace) {
-        if (!namespace.startsWith("/")) {
-            namespace = '/' + namespace;
+    /** Creates a ZooKeeper path of the form "/root/child". */
+    public static String generateZookeeperPath(String root, String child) {
+        final String result =
+                Stream.of(root, child)
+                        .map(ZooKeeperUtils::trimSlashes)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.joining("/", "/", ""));
+
+        return result;
+    }
+
+    public static String trimStartingSlash(String path) {
+        return path.startsWith("/") ? path.substring(1) : path;
+    }
+
+    private static String trimSlashes(String input) {
+        int left = 0;
+        int right = input.length() - 1;
+
+        while (left <= right && input.charAt(left) == '/') {
+            left++;
         }
 
-        if (namespace.endsWith("/")) {
-            namespace = namespace.substring(0, namespace.length() - 1);
+        while (right >= left && input.charAt(right) == '/') {
+            right--;
         }
 
-        if (root.endsWith("/")) {
-            root = root.substring(0, root.length() - 1);
+        if (left <= right) {
+            return input.substring(left, right + 1);
+        } else {
+            return "";
         }
-
-        return root + namespace;
     }
 
     /**
