@@ -487,38 +487,24 @@ public class ZooKeeperUtils {
                 prefix);
     }
 
-    /** Creates a ZooKeeper path of the form "/root/child". */
-    public static String generateZookeeperPath(String root, String child) {
-        final String result =
-                Stream.of(root, child)
-                        .map(ZooKeeperUtils::trimSlashes)
-                        .filter(s -> !s.isEmpty())
-                        .collect(Collectors.joining("/", "/", ""));
+    public static String generateZookeeperPath(String root, String namespace) {
+        if (!namespace.startsWith("/")) {
+            namespace = '/' + namespace;
+        }
 
-        return result;
+        if (namespace.endsWith("/")) {
+            namespace = namespace.substring(0, namespace.length() - 1);
+        }
+
+        if (root.endsWith("/")) {
+            root = root.substring(0, root.length() - 1);
+        }
+
+        return root + namespace;
     }
 
     public static String trimStartingSlash(String path) {
         return path.startsWith("/") ? path.substring(1) : path;
-    }
-
-    private static String trimSlashes(String input) {
-        int left = 0;
-        int right = input.length() - 1;
-
-        while (left <= right && input.charAt(left) == '/') {
-            left++;
-        }
-
-        while (right >= left && input.charAt(right) == '/') {
-            right--;
-        }
-
-        if (left <= right) {
-            return input.substring(left, right + 1);
-        } else {
-            return "";
-        }
     }
 
     /**
