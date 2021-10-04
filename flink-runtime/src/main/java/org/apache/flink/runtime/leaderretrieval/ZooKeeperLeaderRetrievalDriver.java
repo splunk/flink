@@ -64,6 +64,8 @@ public class ZooKeeperLeaderRetrievalDriver
 
     private final LeaderRetrievalEventHandler leaderRetrievalEventHandler;
 
+    private final LeaderInformationClearancePolicy leaderInformationClearancePolicy;
+
     private final FatalErrorHandler fatalErrorHandler;
 
     private volatile boolean running;
@@ -74,18 +76,22 @@ public class ZooKeeperLeaderRetrievalDriver
      * @param client Client which constitutes the connection to the ZooKeeper quorum
      * @param retrievalPath Path of the ZooKeeper node which contains the leader information
      * @param leaderRetrievalEventHandler Handler to notify the leader changes.
+     * @param leaderInformationClearancePolicy leaderInformationClearancePolicy controls when the
+     *     leader information is being cleared
      * @param fatalErrorHandler Fatal error handler
      */
     public ZooKeeperLeaderRetrievalDriver(
             CuratorFramework client,
             String retrievalPath,
             LeaderRetrievalEventHandler leaderRetrievalEventHandler,
+            LeaderInformationClearancePolicy leaderInformationClearancePolicy,
             FatalErrorHandler fatalErrorHandler)
             throws Exception {
         this.client = checkNotNull(client, "CuratorFramework client");
         this.cache = new NodeCache(client, retrievalPath);
         this.retrievalPath = checkNotNull(retrievalPath);
         this.leaderRetrievalEventHandler = checkNotNull(leaderRetrievalEventHandler);
+        this.leaderInformationClearancePolicy = leaderInformationClearancePolicy;
         this.fatalErrorHandler = checkNotNull(fatalErrorHandler);
 
         client.getUnhandledErrorListenable().addListener(this);
@@ -141,7 +147,7 @@ public class ZooKeeperLeaderRetrievalDriver
                     return;
                 }
             }
-            leaderRetrievalEventHandler.notifyLeaderAddress(LeaderInformation.empty());
+            notifyNoLeader();
         } catch (Exception e) {
             fatalErrorHandler.onFatalError(
                     new LeaderRetrievalException("Could not handle node changed event.", e));
@@ -155,10 +161,11 @@ public class ZooKeeperLeaderRetrievalDriver
                 LOG.debug("Connected to ZooKeeper quorum. Leader retrieval can start.");
                 break;
             case SUSPENDED:
-                LOG.warn(
-                        "Connection to ZooKeeper suspended. Can no longer retrieve the leader from "
-                                + "ZooKeeper.");
-                leaderRetrievalEventHandler.notifyLeaderAddress(LeaderInformation.empty());
+                LOG.warn("Connection to ZooKeeper suspended, waiting for reconnection.");
+                if (leaderInformationClearancePolicy
+                        == LeaderInformationClearancePolicy.ON_SUSPENDED_CONNECTION) {
+                    notifyNoLeader();
+                }
                 break;
             case RECONNECTED:
                 LOG.info(
@@ -169,9 +176,13 @@ public class ZooKeeperLeaderRetrievalDriver
                 LOG.warn(
                         "Connection to ZooKeeper lost. Can no longer retrieve the leader from "
                                 + "ZooKeeper.");
-                leaderRetrievalEventHandler.notifyLeaderAddress(LeaderInformation.empty());
+                notifyNoLeader();
                 break;
         }
+    }
+
+    private void notifyNoLeader() {
+        leaderRetrievalEventHandler.notifyLeaderAddress(LeaderInformation.empty());
     }
 
     private void onReconnectedConnectionState() {
@@ -189,5 +200,14 @@ public class ZooKeeperLeaderRetrievalDriver
     @Override
     public String toString() {
         return "ZookeeperLeaderRetrievalDriver{" + "retrievalPath='" + retrievalPath + '\'' + '}';
+    }
+
+    /** Policy when to clear the leader information and to notify the listener about it. */
+    public enum LeaderInformationClearancePolicy {
+        // clear the leader information as soon as the ZK connection is suspended
+        ON_SUSPENDED_CONNECTION,
+
+        // clear the leader information only once the ZK connection is lost
+        ON_LOST_CONNECTION
     }
 }
