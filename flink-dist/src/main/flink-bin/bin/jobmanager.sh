@@ -17,6 +17,8 @@
 # limitations under the License.
 ################################################################################
 
+set -x
+
 # Start/stop a Flink JobManager.
 USAGE="Usage: jobmanager.sh ((start|start-foreground) [host] [webui-port])|stop|stop-all"
 
