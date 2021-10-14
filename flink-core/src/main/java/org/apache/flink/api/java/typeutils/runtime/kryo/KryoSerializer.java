@@ -90,11 +90,11 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
     /**
      * Bind the ExecutionConfig for the Task thread.
      *
-     * This is called from within the Task thread when the ExecutionConfig has been deserialized.
+     * <p>This is called from within the Task thread when the ExecutionConfig has been deserialized.
      *
-     * The registration is thread-local value. The registered ExecutionConfig is eligible for garbage
-     * collection as soon as the task thread ends. This is at the same time that any instantiated
-     * serializer also becomes eligible for garbage collection.
+     * <p>The registration is thread-local value. The registered ExecutionConfig is eligible for
+     * garbage collection as soon as the task thread ends. This is at the same time that any
+     * instantiated serializer also becomes eligible for garbage collection.
      */
     public static void registerExecutionConfigForTaskThread(ExecutionConfig executionConfig) {
         EXECUTION_CONFIG.set(executionConfig);
@@ -118,7 +118,10 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
      */
     private LinkedHashMap<String, KryoRegistration> kryoRegistrations;
 
-    /** Use a separate transient field to not break serialization and to ensure we are not snapshotting added serializers. */
+    /**
+     * Use a separate transient field to not break serialization and to ensure we are not
+     * snapshotting added serializers.
+     */
     private transient List<KryoRegistration> ephemeralKryoRegistrations;
 
     private final Class<T> type;
@@ -216,10 +219,14 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
             ExecutionConfig executionConfig = EXECUTION_CONFIG.get();
             if (executionConfig != null) {
                 ephemeralKryoRegistrations = new ArrayList<>();
-                for (Map.Entry<Class<?>, Class<? extends Serializer<?>>> entry : executionConfig.getEphemeralRegisteredTypesWithKryoSerializerClasses().entrySet()) {
+                for (Map.Entry<Class<?>, Class<? extends Serializer<?>>> entry :
+                        executionConfig
+                                .getEphemeralRegisteredTypesWithKryoSerializerClasses()
+                                .entrySet()) {
                     Class<?> typeClass = entry.getKey();
                     Class<? extends Serializer<?>> serializerClass = entry.getValue();
-                    ephemeralKryoRegistrations.add(new KryoRegistration(typeClass, serializerClass));
+                    ephemeralKryoRegistrations.add(
+                            new KryoRegistration(typeClass, serializerClass));
                 }
             }
         } catch (Exception e) {

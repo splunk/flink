@@ -263,7 +263,7 @@ public abstract class AbstractStreamOperator<OUT>
             throws Exception {
 
         // We are being called from the StreamTask thread.
-        // The ExecutionConfig is tied to the task thread which runts this operator.
+        // The ExecutionConfig is tied to the task thread which runs this operator.
         // I'm registering here instead of in StreamTask to allow lightweight test code to leverage
         // this functionality as well.
         KryoSerializer.registerExecutionConfigForTaskThread(getExecutionConfig());

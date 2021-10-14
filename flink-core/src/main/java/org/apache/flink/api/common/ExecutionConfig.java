@@ -168,7 +168,8 @@ public class ExecutionConfig implements Serializable, Archiveable<ArchivedExecut
 
     // Ephemeral version of the registered types above, which does not creep into savepoints
     // If you depend on a serializer here, you must add it every time.
-    private LinkedHashMap<Class<?>, Class<? extends Serializer<?>>> ephemeralRegisteredTypesWithKryoSerializerClasses = new LinkedHashMap<>();
+    private LinkedHashMap<Class<?>, Class<? extends Serializer<?>>>
+            ephemeralRegisteredTypesWithKryoSerializerClasses = new LinkedHashMap<>();
 
     private LinkedHashMap<Class<?>, SerializableSerializer<?>> defaultKryoSerializers =
             new LinkedHashMap<>();
@@ -784,20 +785,22 @@ public class ExecutionConfig implements Serializable, Archiveable<ArchivedExecut
     }
 
     /**
-     * Registers the given Serializer via its class as a serializer for the given type at the KryoSerializer.
-     * DOES NOT PERSIST THE SERIALIZER IN SAVEPOINTS
+     * Registers the given Serializer via its class as a serializer for the given type at the
+     * KryoSerializer. DOES NOT PERSIST THE SERIALIZER IN SAVEPOINTS
      *
      * @param type The class of the types serialized with the given serializer.
      * @param serializerClass The class of the serializer to use.
      */
     @SuppressWarnings("rawtypes")
-    public void registerTypeWithEphemeralKryoSerializer(Class<?> type, Class<? extends Serializer> serializerClass) {
+    public void registerTypeWithEphemeralKryoSerializer(
+            Class<?> type, Class<? extends Serializer> serializerClass) {
         if (type == null || serializerClass == null) {
             throw new NullPointerException("Cannot register null class or serializer.");
         }
 
         @SuppressWarnings("unchecked")
-        Class<? extends Serializer<?>> castedSerializerClass = (Class<? extends Serializer<?>>) serializerClass;
+        Class<? extends Serializer<?>> castedSerializerClass =
+                (Class<? extends Serializer<?>>) serializerClass;
         ephemeralRegisteredTypesWithKryoSerializerClasses.put(type, castedSerializerClass);
     }
 
@@ -839,10 +842,9 @@ public class ExecutionConfig implements Serializable, Archiveable<ArchivedExecut
         return registeredTypesWithKryoSerializers;
     }
 
-    /**
-     * Returns the registered types with their ephemeral Kryo Serializer classes.
-     */
-    public LinkedHashMap<Class<?>, Class<? extends Serializer<?>>> getEphemeralRegisteredTypesWithKryoSerializerClasses() {
+    /** Returns the registered types with their ephemeral Kryo Serializer classes. */
+    public LinkedHashMap<Class<?>, Class<? extends Serializer<?>>>
+            getEphemeralRegisteredTypesWithKryoSerializerClasses() {
         return ephemeralRegisteredTypesWithKryoSerializerClasses;
     }
 
