@@ -4,7 +4,7 @@ schedules:
     displayName: Daily release check
     branches:
       include:
-        - branch
+        - branch_cutover
     always: true
 
 stages:
