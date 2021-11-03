@@ -18,6 +18,7 @@
 
 package org.apache.flink.table.planner.functions;
 
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.EnvironmentSettings;
@@ -51,7 +52,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Collections.singletonList;
-import static org.apache.flink.core.testutils.FlinkMatchers.containsCause;
 import static org.apache.flink.core.testutils.FlinkMatchers.containsMessage;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,10 +80,15 @@ public abstract class BuiltInFunctionTestBase {
 
     @Parameter public TestSpec testSpec;
 
+    protected Configuration configuration() {
+        return new Configuration();
+    }
+
     @Test
     public void testFunction() {
         final TableEnvironment env =
                 TableEnvironment.create(EnvironmentSettings.newInstance().build());
+        env.getConfig().addConfiguration(configuration());
 
         testSpec.functions.forEach(f -> env.createTemporarySystemFunction(f.getSimpleName(), f));
 
@@ -153,8 +158,9 @@ public abstract class BuiltInFunctionTestBase {
 
             assertEquals(
                     "Result for spec [" + i + "] of test [" + testItem + "] doesn't match.",
-                    testItem.results.get(i),
-                    row.getField(i));
+                    // Use Row.equals() to enable equality for complex structure, i.e. byte[]
+                    Row.of(testItem.results.get(i)),
+                    Row.of(row.getField(i)));
         }
     }
 
@@ -187,12 +193,8 @@ public abstract class BuiltInFunctionTestBase {
         } catch (AssertionError e) {
             throw e;
         } catch (Throwable t) {
-            if (testItem instanceof TableApiErrorTestItem) {
-                assertThat(t, containsCause(new ValidationException(testItem.errorMessage)));
-            } else {
-                assertTrue(t instanceof ValidationException);
-                assertThat(t.getMessage(), containsString(testItem.errorMessage));
-            }
+            assertTrue(t instanceof ValidationException);
+            assertThat(t.getMessage(), containsString(testItem.errorMessage));
         }
     }
 
@@ -342,10 +344,7 @@ public abstract class BuiltInFunctionTestBase {
                 List<AbstractDataType<?>> sqlDataType) {
             testItems.add(new TableApiResultTestItem(expression, result, tableApiDataType));
             testItems.add(
-                    new SqlResultTestItem(
-                            sqlExpression.stream().collect(Collectors.joining(",")),
-                            result,
-                            sqlDataType));
+                    new SqlResultTestItem(String.join(",", sqlExpression), result, sqlDataType));
             return this;
         }
 
@@ -407,7 +406,7 @@ public abstract class BuiltInFunctionTestBase {
             return "[API] "
                     + expression.stream()
                             .map(Expression::asSummaryString)
-                            .collect(Collectors.joining());
+                            .collect(Collectors.joining(", "));
         }
     }
 
