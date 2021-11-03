@@ -45,17 +45,15 @@ latest_upstream_release_tag="release-$latest_release_tag_version"
 echo "Latest release tag: $latest_upstream_release_tag"
 
 
-# get splunk release tags
-splunk_tags=`git tag -l`
+# get splunk release branches
+splunk_branches=`git branch -r`
 
-splunk_release_tags=()
-for tag in $splunk_tags; do
+splunk_release_branches=()
+for branch in $splunk_branches; do
 
-    if [[ $tag == *"release"* ]]; then
-
-        value=`echo $tag | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
+    if [[ $branch == *"release"* ]]; then
+        value=`echo $branch | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
         splunk_release_tags+=($value)
-
     else
         continue
     fi
