@@ -1,0 +1,18 @@
+
+schedules:
+  - cron: "45 17 * * *"
+    displayName: Daily release check
+    branches:
+      include:
+        - branch
+    always: true
+
+stages:
+  - stage: release_version
+    displayName: Daily release check
+    condition: and(always(), eq(variables['Build.Reason'],'Schedule'))
+    jobs:
+      - job: new_release_version_check
+        steps:
+          - script: ./tools/branch_cutover_and_rebase.sh
+            displayName: "Verify new Release Version and cherrypick commits"
