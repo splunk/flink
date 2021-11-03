@@ -4,10 +4,15 @@ SPLUNK_MAJOR_VERSION="1.13"
 
 git clone https://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@github.com/splunk/flink.git
 
+cd flink
+git branch
+
 echo "------ cloned splunk/flink repo"
 
 # Add upstream which points to Flink repo and update splunk repo's master
 git remote add upstream https://github.com/apache/flink.git
+
+echo "------ 1"
 git fetch
 git pull upstream master
 #git push
