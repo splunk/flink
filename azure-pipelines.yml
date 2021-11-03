@@ -34,6 +34,14 @@ trigger:
     include:
     - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
+schedules:
+  - cron: "45 11 * * *"
+    displayName: Daily release check
+    branches:
+      include:
+        - branch_cutover
+    always: true
+
 resources:
   containers:
   # Container with Maven 3.2.5, SSL to have the same environment everywhere.
@@ -65,6 +73,14 @@ variables:
 
 stages:
   # CI / PR triggered stage:
+  - stage: release_version
+    displayName: Daily release check
+    condition: and(always(), eq(variables['Build.Reason'],'Schedule'))
+    jobs:
+      - job: new_release_version_check
+        steps:
+          - script: ./tools/branch_cutover_and_rebase.sh
+            displayName: "Verify new Release Version and cherrypick commits"
   - stage: ci
     displayName: "CI build (custom builders)"
     condition: not(eq(variables['MODE'], 'release'))
