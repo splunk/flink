@@ -2,7 +2,7 @@
 
 SPLUNK_MAJOR_VERSION="1.13"
 
-git clone git@github.com:splunk/flink.git
+git clone https://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@github.com/splunk/flink.git
 
 echo "------ cloned splunk/flink repo"
 
@@ -116,5 +116,4 @@ else
 #    git push origin $latest_splunk_release_tag
 #
 #    echo "Successfully cherry-picked all commits to new tag $latest_splunk_release_tag and modified to splunk specific versioning" | mail -s "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag" ssg-dsp-streaming-compute-service@splunk.com
-
 fi
