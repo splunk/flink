@@ -20,7 +20,7 @@ git fetch upstream
 git pull upstream master
 
 echo "test push ---------------------------------"
-url="https://$(SECRETKEY)@github.com/splunk/flink.git"
+url="https://$(SECRETS)@github.com/splunk/flink.git"
 echo "$url"
 git push $url master
 
