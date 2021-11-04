@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SPLUNK_MAJOR_VERSION="1.13"
-apt-get install mailutils -y
+sudo apt-get install mailutils
 echo "Message Body" | mail -s "Message Subject" srampally@splunk.com
 git clone https://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@github.com/splunk/flink.git
 git config --global user.email "srampally@splunk.com"
@@ -103,7 +103,7 @@ else
         echo "$result"
         echo "-------------------------------------------"
 
-        if [[ $result = *"CONFLICT"* ]]; then
+        if [ "$result" = *"CONFLICT"* ] || [ "$result" = *"failed"* ]; then
             echo "Conflict occured. Please resolve manually"
             echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually" | mail -s "Conflict occurred while cherry-picking commits from $current_splunk_release_tag to $latest_splunk_release_tag" srampally@splunk.com
             exit
