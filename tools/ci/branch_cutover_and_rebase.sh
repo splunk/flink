@@ -2,9 +2,10 @@
 
 SPLUNK_MAJOR_VERSION="1.13"
 
-git clone https://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@github.com/splunk/flink.git
-git config --global user.email "srampally@splunk.com"
-git config --global user.name "Srikar Rampally"
+
+git config --global user.email "splunkuser@splunk.com"
+git config --global user.name "splunk"
+git clone https://github.com/splunk/flink.git
 
 cd flink
 git pull
