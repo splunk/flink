@@ -19,8 +19,11 @@ git remote add upstream https://github.com/apache/flink.git
 git fetch upstream
 git pull upstream master
 
+git remote remove origin
+git remote add origin https://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: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@github.com/splunk/flink.git
+
 echo "test push ---------------------------------"
-git push https://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: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@github.com/splunk/flink.git
+git push origin master
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
