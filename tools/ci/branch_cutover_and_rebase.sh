@@ -21,7 +21,7 @@ git pull upstream master
 
 echo "test"
 git remote remove origin
-git add remote origin https://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@github.com/splunk/flink.git
+git remote add origin https://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@github.com/splunk/flink.git
 
 echo "test push ---------------------------------"
 git push
