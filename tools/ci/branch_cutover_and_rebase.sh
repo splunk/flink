@@ -22,7 +22,7 @@ git pull upstream master
 
 
 echo "test push ---------------------------------"
-git push https://srampally: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@github.com/splunk/flink.git master
+git push origin master
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
