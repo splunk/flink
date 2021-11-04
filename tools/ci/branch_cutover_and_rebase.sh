@@ -5,6 +5,7 @@ SPLUNK_MAJOR_VERSION="1.13"
 git clone https://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@github.com/splunk/flink.git
 
 cd flink
+git pull
 git branch
 
 echo "------ cloned splunk/flink repo"
@@ -73,50 +74,51 @@ echo "Old Splunk equivalent upstream release tag: $old_upstream_release_tag"
 if [[ $latest_release_tag_version = $current_splunk_release_tag_version ]]; then
     echo "Latest minor release tag matches with the current splunk release tag"
 else
-#    echo "Latest minor release tag doesn't match with the current splunk release tag"
-#    #creates a splunk specific release branch
-#    git checkout -b $latest_splunk_release_tag upstream/$latest_release_tag
-#
-#    # origin should be pointing to git@github.com:splunk/flink.git
+    echo "Latest minor release tag doesn't match with the current splunk release tag"
+    #creates a splunk specific release branch
+    git fetch upstream --tags
+    git checkout -b $latest_splunk_release_tag $latest_release_tag
+
+    # origin should be pointing to git@github.com:splunk/flink.git
 #    git push origin $latest_splunk_release_tag
-#
-#    # provides most recent common ancestor between 2 branches
-#    base=`git merge-base $current_splunk_release_tag $old_upstream_release_tag`
-#    echo -e "Most recent common ancestor commit: $base \n"
-#
-#    # gets the list of commits that have been added after the branch has been cutover
-#    diff=`git rev-list --ancestry-path $base..$current_splunk_release_tag --reverse`
-#    echo -e "List of commits:\n$diff \n"
-#
-#
-#    # cherry pick commits based on requirement
-#    for commit in $diff; do
-#
-#        commit_info=`git rev-list --format=%B --max-count=1 $commit`
-#
-#        echo "$commit_info"
-#
-#        if [[ $commit_info = *"modify flink versioning"* ]]; then
-#            continue
-#        fi
-#
-#        result=`git cherry-pick $commit`
-#        echo "$result"
-#
-#        if [[ $result = *"CONFLICT"* ]]; then
-#            echo "Conflict occured. Please resolve manually"
-#            echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually" | mail -s "Conflict occurred while cherry-picking commits from $current_splunk_release_tag to $latest_splunk_release_tag" ssg-dsp-streaming-compute-service@splunk.com
-#            exit
-#        fi
-#    done
-#
-#    # modify flink versioning to append splunk-SNAPSHOT
-#    cd tools
-#    sh change-version.sh $latest_release_tag
-#    git add .
-#    git commit -m "modify flink versioning"
-#
+
+    # finds the rebased from the release tag version
+    base=`git log origin/$current_splunk_release_tag --grep="Commit for release $current_splunk_release_tag_version" --format="%H"`
+    echo "Most recent common ancestor commit: $base \n"
+
+    # gets the list of commits that have been added after the branch has been cutover
+    diff=`git rev-list --ancestry-path $base..origin/$current_splunk_release_tag --reverse`
+    echo "List of commits:\n$diff \n"
+
+    # cherry pick commits based on requirement
+    for commit in $diff; do
+
+        commit_info=`git rev-list --format=%B --max-count=1 $commit`
+
+        echo "$commit_info"
+
+        if [[ $commit_info = *"modify flink versioning"* ]]; then
+            continue
+        fi
+
+        result=`git cherry-pick $commit`
+        echo "$result"
+
+        if [[ $result = *"CONFLICT"* ]]; then
+            echo "Conflict occured. Please resolve manually"
+            echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually" | mail -s "Conflict occurred while cherry-picking commits from $current_splunk_release_tag to $latest_splunk_release_tag" srampally@splunk.com
+            exit
+        fi
+    done
+
+    # modify flink versioning to append splunk-SNAPSHOT
+    cd tools
+    sh change-version.sh $latest_release_tag
+    cd ..
+    git add .
+    git commit -m "modify flink versioning"
+
 #    git push origin $latest_splunk_release_tag
-#
-#    echo "Successfully cherry-picked all commits to new tag $latest_splunk_release_tag and modified to splunk specific versioning" | mail -s "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag" ssg-dsp-streaming-compute-service@splunk.com
+
+    echo "Successfully cherry-picked all commits to new tag $latest_splunk_release_tag and modified to splunk specific versioning" | mail -s "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag" srampally@splunk.com
 fi
