@@ -20,7 +20,7 @@ git fetch upstream
 git pull upstream master
 
 echo "test push ---------------------------------"
-git push https://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@github.com/splunk/flink.git
+git push https://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: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@github.com/splunk/flink.git
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
