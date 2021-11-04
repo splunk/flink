@@ -1,12 +1,6 @@
 #!/bin/bash
 
 SPLUNK_MAJOR_VERSION="1.13"
-sudo apt-get install mailutils
-
-
-echo "Message Body" | mail -s "Message Subject" srampally@splunk.com
-
-exit 1
 
 git clone https://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@github.com/splunk/flink.git
 git config --global user.email "srampally@splunk.com"
@@ -85,13 +79,18 @@ else
 
     # finds the rebased from the release tag version
     base=`git log origin/$current_splunk_release_tag --grep="Commit for release $current_splunk_release_tag_version" --format="%H"`
-    echo "Most recent common ancestor commit: $base \n"
+    echo "Most recent common ancestor commit: $base"
     echo "-------------------------------------------"
 
     # gets the list of commits that have been added after the branch has been cutover
     diff=`git rev-list --ancestry-path $base..origin/$current_splunk_release_tag --reverse`
-    echo "List of commits:\n$diff \n"
+    echo "List of commits: $diff"
     echo "-------------------------------------------"
+
+    if [[ -z "$diff" ]]; then
+      echo "No commits to cherry pick. Please check build logs and script"
+      exit 1
+    fi
 
     # cherry pick commits based on requirement
     for commit in $diff; do
@@ -110,8 +109,8 @@ else
 
         if [ "$result" = *"CONFLICT"* ] || [ "$result" = *"failed"* ]; then
             echo "Conflict occured. Please resolve manually"
-            echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually" | mail -s "Conflict occurred while cherry-picking commits from $current_splunk_release_tag to $latest_splunk_release_tag" srampally@splunk.com
-            exit
+            echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually"
+            exit 1
         fi
     done
 
@@ -125,5 +124,5 @@ else
 
 #    git push origin $latest_splunk_release_tag
 
-    echo "Successfully cherry-picked all commits to new tag $latest_splunk_release_tag and modified to splunk specific versioning" | mail -s "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag" srampally@splunk.com
+    echo "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag"
 fi
