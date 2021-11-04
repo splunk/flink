@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SPLUNK_MAJOR_VERSION="1.13"
-sudo apt-get install mailutils
-
+apt-get install mailutils -y
+echo "Message Body" | mail -s "Message Subject" srampally@splunk.com
 git clone https://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@github.com/splunk/flink.git
 git config --global user.email "srampally@splunk.com"
 git config --global user.name "Srikar Rampally"
