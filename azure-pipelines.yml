@@ -106,6 +106,8 @@ stages:
         pool:
           vmImage: 'ubuntu-20.04'
         steps:
+          - checkout: self
+            persistCredentials: true
           - script: |
               chmod +x ./tools/ci/branch_cutover_and_rebase.sh
               ./tools/ci/branch_cutover_and_rebase.sh

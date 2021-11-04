@@ -5,7 +5,7 @@ SPLUNK_MAJOR_VERSION="1.13"
 
 git config --global user.email "splunkuser@splunk.com"
 git config --global user.name "splunk"
-git clone https://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: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@github.com/splunk/flink.git
+git clone https://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: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@github.com/splunk/flink.git
 
 cd flink
 git pull
@@ -21,10 +21,10 @@ git fetch upstream
 git pull upstream master
 
 git remote remove origin
-git remote add origin https://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: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@github.com/splunk/flink.git
+git remote add origin https://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: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@github.com/splunk/flink.git
 
 echo "test push ---------------------------------"
-git push origin master
+git push https://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@github.com/splunk/flink.git master
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
