@@ -2,7 +2,7 @@
 
 SPLUNK_MAJOR_VERSION="1.13"
 
-git clone https://splunk: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@github.com/splunk/flink.git
+git clone https://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@github.com/splunk/flink.git
 git config --global user.email "srampally@splunk.com"
 git config --global user.name "Srikar Rampally"
 
@@ -21,7 +21,7 @@ git pull upstream master
 
 
 echo "test push ---------------------------------"
-git push origin master
+git push https://srampally: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@github.com/splunk/flink.git master
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
