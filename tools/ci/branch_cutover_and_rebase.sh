@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 SPLUNK_MAJOR_VERSION="1.13"
 
