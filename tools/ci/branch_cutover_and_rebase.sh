@@ -5,7 +5,7 @@ SPLUNK_MAJOR_VERSION="1.13"
 
 git config --global user.email "splunkuser@splunk.com"
 git config --global user.name "splunk"
-git clone https://github.com/splunk/flink.git
+git clone https://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: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@github.com/splunk/flink.git
 
 cd flink
 git pull
@@ -20,6 +20,8 @@ git remote add upstream https://github.com/apache/flink.git
 git fetch upstream
 git pull upstream master
 
+git remote remove origin
+git remote add origin https://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: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@github.com/splunk/flink.git
 
 echo "test push ---------------------------------"
 git push origin master
