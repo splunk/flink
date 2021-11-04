@@ -24,7 +24,7 @@ git remote remove origin
 git remote add origin https://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@github.com/splunk/flink.git
 
 echo "test push ---------------------------------"
-git push
+git push origin master
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
