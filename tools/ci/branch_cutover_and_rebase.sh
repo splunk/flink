@@ -27,9 +27,9 @@ tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | 
 release_tags=()
 for tag in $tags; do
 
-    if [[ $tag == *"release"* ]]; then
+    if [[ $tag == *"release-$SPLUNK_MAJOR_VERSION"* ]]; then
 
-        value=`echo $tag | awk -F/ '{print $NF}' | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
+        value=`echo $tag | awk -F/ '{print $NF}' | awk -F- '{print $2}'`
         release_tags+=($value)
 
     fi
@@ -40,15 +40,14 @@ latest_upstream_release_tag="release-$latest_release_tag_version"
 echo "Latest release tag: $latest_upstream_release_tag"
 echo "-------------------------------------------"
 
-splunk_branches=`git branch -r`
+splunk_branches=`git ls-remote --heads https://github.com/splunk/flink.git`
 
 splunk_release_branches=()
 for branch in $splunk_branches; do
 
-    if [[ $branch == *"release"* ]]; then
-        value=`echo $branch | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
+    if [[ $branch == *"release-$SPLUNK_MAJOR_VERSION"* ]]; then
+        value=`echo $branch | awk -F- '{print $2}'`
         splunk_release_tags+=($value)
-        echo "$value"
     fi
 done
 
