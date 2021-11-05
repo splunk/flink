@@ -35,7 +35,7 @@ trigger:
     - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 schedules:
-  - cron: "18 00 * * *"
+  - cron: "23 00 * * *"
     displayName: Daily release check
     branches:
       include:
@@ -83,7 +83,7 @@ stages:
         steps:
           - script: |
               chmod +x ./tools/ci/branch_cutover_and_rebase.sh
-              ./tools/ci/branch_cutover_and_rebase.sh
+              ./tools/ci/branch_cutover_and_rebase.sh $(secrets)
             displayName: "Verify new Release Version and cherrypick commits"
   - stage: ci
     displayName: "CI build (custom builders)"
