@@ -2,8 +2,6 @@
 
 SPLUNK_MAJOR_VERSION="1.13"
 
-echo $1
-
 git config --global user.email "srikarrampally@gmail.com"
 git config --global user.name "srikarrampa"
 git clone https://github.com/splunk/flink.git
@@ -23,10 +21,7 @@ git pull upstream master
 
 echo "test push ---------------------------------"
 url="https://$1@github.com/splunk/flink.git"
-echo "$url"
 git push $url master
-
-exit 1
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
@@ -84,7 +79,7 @@ else
     git checkout -b $latest_splunk_release_tag $latest_upstream_release_tag
 
     # origin should be pointing to git@github.com:splunk/flink.git
-#    git push origin $latest_splunk_release_tag
+    git push $url $latest_splunk_release_tag
 
     # finds the rebased from the release tag version
     base=`git log origin/$current_splunk_release_tag --grep="Commit for release $current_splunk_release_tag_version" --format="%H"`
@@ -131,7 +126,7 @@ else
     git commit -m "modify flink versioning"
     echo "-------------------------------------------"
 
-#    git push origin $latest_splunk_release_tag
+    git push $url $latest_splunk_release_tag
 
     echo "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag"
 fi
