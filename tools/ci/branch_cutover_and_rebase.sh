@@ -21,7 +21,7 @@ git pull upstream master
 
 echo "Push changes from upstream https://github.com/apache/flink.git to https://github.com/splunk/flink.git master"
 url="https://$1@github.com/splunk/flink.git"
-push_result=`git push $url master`
+push_result=$(git push $url master 2>&1)
 if [[ $push_result = *"fatal"* ]]; then
     echo "Push to splunk/flink failed. Please check permissions"
     exit 1
