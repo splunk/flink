@@ -20,7 +20,11 @@ git fetch upstream
 git pull upstream master
 
 url="https://$1@github.com/splunk/flink.git"
-#git push $url master
+push_result=`git push $url master`
+if [[ $push_result = *"fatal"* ]]; then
+    echo "Push to splunk/flink failed. Please check permissions"
+    exit 1
+fi
 
 tags=`git ls-remote --tags https://github.com/apache/flink.git | grep release | grep -Ev 'rc|{}'`
 
@@ -49,24 +53,25 @@ for branch in $splunk_branches; do
         value=`echo $branch | awk -F- '{print $2}'`
         splunk_release_tags+=($value)
     fi
+
 done
 
-current_splunk_release_tag_version=${splunk_release_tags[${#splunk_release_tags[@]} - 1]}
-current_splunk_release_tag="release-$current_splunk_release_tag_version-splunk"
-echo "Current Splunk release tag: $current_splunk_release_tag"
+current_splunk_release_branch_version=${splunk_release_tags[${#splunk_release_tags[@]} - 1]}
+current_splunk_release_branch="release-$current_splunk_release_branch_version-splunk"
+echo "Current Splunk release tag: $current_splunk_release_branch"
 echo "-------------------------------------------"
 
 latest_splunk_release_tag="release-$latest_release_tag_version-splunk"
 echo "Latest splunk release tag: $latest_splunk_release_tag"
 echo "-------------------------------------------"
 
-old_upstream_release_tag="release-$current_splunk_release_tag_version"
+old_upstream_release_tag="release-$current_splunk_release_branch_version"
 echo "Old Splunk equivalent upstream release tag: $old_upstream_release_tag"
 echo "-------------------------------------------"
 
-if [[ $latest_release_tag_version = $current_splunk_release_tag_version ]]; then
+if [[ $latest_release_tag_version = $current_splunk_release_branch_version ]]; then
     echo "${green}Latest minor release tag matches with the current splunk release tag${reset}"
-    latest_splunk_release_tag="release-$latest_release_tag-splunk"
+    latest_splunk_release_tag="release-$latest_release_tag_version-splunk"
     echo $latest_splunk_release_tag
     echo "-------------------------------------------"
 else
@@ -77,15 +82,17 @@ else
     git checkout -b $latest_splunk_release_tag $latest_upstream_release_tag
 
     # origin should be pointing to git@github.com:splunk/flink.git
-#    git push $url $latest_splunk_release_tag
+    git push $url $latest_splunk_release_tag
+
+
 
     # finds the rebased from the release tag version
-    base=`git log origin/$current_splunk_release_tag --grep="Commit for release $current_splunk_release_tag_version" --format="%H"`
+    base=`git log origin/$current_splunk_release_branch --grep="Commit for release $current_splunk_release_branch_version" --format="%H"`
     echo "Most recent common ancestor commit: $base"
     echo "-------------------------------------------"
 
     # gets the list of commits that have been added after the branch has been cutover
-    diff=`git rev-list --ancestry-path $base..origin/$current_splunk_release_tag --reverse`
+    diff=`git rev-list --ancestry-path $base..origin/$current_splunk_release_branch --reverse`
     echo "List of commits: $diff"
     echo "-------------------------------------------"
 
@@ -124,7 +131,7 @@ else
     git commit -m "modify flink versioning"
     echo "-------------------------------------------"
 
-#    git push $url $latest_splunk_release_tag
+    git push $url $latest_splunk_release_tag
 
-    echo "Successfully cherry-picked all commits from $current_splunk_release_tag to $latest_splunk_release_tag"
+    echo "Successfully cherry-picked all commits from $current_splunk_release_branch to $latest_splunk_release_tag"
 fi
