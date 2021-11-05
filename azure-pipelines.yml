@@ -35,7 +35,7 @@ trigger:
     - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 schedules:
-  - cron: "23 00 * * *"
+  - cron: "32 16 * * *"
     displayName: Daily release check
     branches:
       include:

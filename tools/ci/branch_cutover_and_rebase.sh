@@ -19,7 +19,6 @@ git remote add upstream https://github.com/apache/flink.git
 git fetch upstream
 git pull upstream master
 
-echo "test push ---------------------------------"
 url="https://$1@github.com/splunk/flink.git"
 git push $url master
 
@@ -32,8 +31,7 @@ for tag in $tags; do
 
         value=`echo $tag | awk -F/ '{print $NF}' | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
         release_tags+=($value)
-    else
-        continue
+
     fi
 done
 
@@ -50,17 +48,18 @@ for branch in $splunk_branches; do
     if [[ $branch == *"release"* ]]; then
         value=`echo $branch | awk -F- '{print $2}' | grep $SPLUNK_MAJOR_VERSION`
         splunk_release_tags+=($value)
-    else
-        continue
+
     fi
 done
 
 current_splunk_release_tag_version=${splunk_release_tags[${#splunk_release_tags[@]} - 1]}
 current_splunk_release_tag="release-$current_splunk_release_tag_version-splunk"
 echo "Current Splunk release tag: $current_splunk_release_tag"
+echo "-------------------------------------------"
 
 latest_splunk_release_tag="release-$latest_release_tag_version-splunk"
 echo "Latest splunk release tag: $latest_splunk_release_tag"
+echo "-------------------------------------------"
 
 old_upstream_release_tag="release-$current_splunk_release_tag_version"
 echo "Old Splunk equivalent upstream release tag: $old_upstream_release_tag"
