@@ -19,6 +19,7 @@ git remote add upstream https://github.com/apache/flink.git
 git fetch upstream
 git pull upstream master
 
+echo "Push changes from upstream https://github.com/apache/flink.git to https://github.com/splunk/flink.git master"
 url="https://$1@github.com/splunk/flink.git"
 push_result=`git push $url master`
 if [[ $push_result = *"fatal"* ]]; then
@@ -82,7 +83,7 @@ else
     git checkout -b $latest_splunk_release_tag $latest_upstream_release_tag
 
     # origin should be pointing to git@github.com:splunk/flink.git
-    git push $url $latest_splunk_release_tag
+#    git push $url $latest_splunk_release_tag
 
 
 
@@ -131,7 +132,7 @@ else
     git commit -m "modify flink versioning"
     echo "-------------------------------------------"
 
-    git push $url $latest_splunk_release_tag
+#    git push $url $latest_splunk_release_tag
 
     echo "Successfully cherry-picked all commits from $current_splunk_release_branch to $latest_splunk_release_tag"
 fi
