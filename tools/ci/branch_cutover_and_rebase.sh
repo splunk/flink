@@ -57,15 +57,15 @@ else
     git fetch upstream --tags
     checkout_result=$(git checkout -b $new_splunk_release_tag $new_upstream_release_tag 2>&1)
 
-    if [ $checkout_result = *"fatal"* ] && [$checkout_result = *"already exists"*]; then
-        echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version"
+    if [[ $checkout_result = *"fatal"* ]] && [[ $checkout_result = *"exists"* ]]; then
+        echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version if required"
         echo "-------------------------------------------"
 
         git checkout $new_splunk_release_tag
         common_commit=`git merge-base $current_splunk_release_branch $new_splunk_release_tag`
         echo "Common ancestor commit between old and new branches: $common_commit"
         echo "-------------------------------------------"
-        exit 1
+        exit
     fi
 
     # origin should be pointing to git@github.com:splunk/flink.git
