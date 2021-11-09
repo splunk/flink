@@ -29,7 +29,7 @@ if [[ $push_result = *"fatal"* ]]; then
     exit 1
 fi
 
-new_release_tag_version=`git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' https://github.com/apache/flink.git 'release-1.13*' | tail -1 | cut -d - -f 2`
+new_release_tag_version=`git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' https://github.com/apache/flink.git "release-$SPLUNK_MAJOR_VERSION*" | tail -1 | cut -d - -f 2`
 new_upstream_release_tag="release-$new_release_tag_version"
 echo "New release tag: $new_upstream_release_tag"
 echo "-------------------------------------------"
@@ -55,21 +55,15 @@ else
     echo "-------------------------------------------"
     #creates a splunk specific release branch
     git fetch upstream --tags
-    git checkout -b $new_splunk_release_tag $new_upstream_release_tag
 
-    if [[ "$checkout_result" = *"fatal:"* ]] && [[ "$checkout_result" = *"exists"* ]]; then
+    branch_exists=`git ls-remote --heads https://github.com/splunk/flink.git $new_splunk_release_tag | wc -l | tr -d ' '`
+
+    if [[ "$branch_exists" == "1" ]]; then
         echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version if required"
         echo "-------------------------------------------"
-
-        git checkout $new_splunk_release_tag
-        common_commit=`git merge-base $current_splunk_release_branch $new_splunk_release_tag`
-        echo "Common ancestor commit between old and new branches: $common_commit"
-        echo "-------------------------------------------"
-        exit
     fi
 
-    # origin should be pointing to git@github.com:splunk/flink.git
-#    git push $url $new_splunk_release_tag
+    git checkout -b $new_splunk_release_tag $new_upstream_release_tag
 
     # finds the rebased from the release tag version
     base=`git rev-list -n 1 release-${DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION}`
@@ -117,7 +111,7 @@ else
     git commit -m "modify flink versioning"
     echo "-------------------------------------------"
 
-#    git push $url $new_splunk_release_tag
+    git push -f $url $new_splunk_release_tag
 
     echo "Successfully cherry-picked all commits from $current_splunk_release_branch to $new_splunk_release_tag"
 fi
