@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SPLUNK_MAJOR_VERSION="1.13"
+SECRET=$1
 
 git config --global user.email "srikarrampally@gmail.com"
 git config --global user.name "srikarrampa"
@@ -20,7 +21,7 @@ git pull upstream master
 
 echo "Push changes from upstream https://github.com/apache/flink.git to https://github.com/splunk/flink.git master"
 echo "-------------------------------------------"
-url="https://$1@github.com/splunk/flink.git"
+url="https://$SECRET@github.com/splunk/flink.git"
 push_result=$(git push $url master 2>&1)
 if [[ $push_result = *"fatal"* ]]; then
     echo "Push to splunk/flink failed. Please check permissions"
