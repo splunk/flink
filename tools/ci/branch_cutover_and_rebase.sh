@@ -57,7 +57,7 @@ else
     git fetch upstream --tags
     checkout_result=$(git checkout -b $new_splunk_release_tag $new_upstream_release_tag 2>&1)
 
-    if [[ $checkout_result = *"fatal"* ]] && [[ $checkout_result = *"exists"* ]]; then
+    if [[ "$checkout_result" = *"fatal:"* ]] && [[ "$checkout_result" = *"exists"* ]]; then
         echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version if required"
         echo "-------------------------------------------"
 
