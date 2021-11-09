@@ -34,8 +34,7 @@ new_upstream_release_tag="release-$new_release_tag_version"
 echo "New release tag: $new_upstream_release_tag"
 echo "-------------------------------------------"
 
-current_splunk_release_branch_version=`git -c 'versionsort.suffix=-' ls-remote --heads --sort='v:refname' https://github.com/splunk/flink.git 'release-1.13*' | tail -1 | cut -d - -f 2`
-current_splunk_release_branch="release-$current_splunk_release_branch_version-splunk"
+current_splunk_release_branch="release-$DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION-splunk"
 echo "Current Splunk release tag: $current_splunk_release_branch"
 echo "-------------------------------------------"
 
@@ -43,11 +42,11 @@ new_splunk_release_tag="release-$new_release_tag_version-splunk"
 echo "New splunk release tag: $new_splunk_release_tag"
 echo "-------------------------------------------"
 
-current_upstream_release_tag="release-$current_splunk_release_branch_version"
+current_upstream_release_tag="release-$DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION"
 echo "Current Splunk equivalent upstream release tag: $current_upstream_release_tag"
 echo "-------------------------------------------"
 
-if [[ $new_release_tag_version = $current_splunk_release_branch_version ]]; then
+if [[ $new_release_tag_version = $DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION ]]; then
     echo "Old minor release tag matches with the current splunk release tag"
     echo $new_splunk_release_tag
     echo "-------------------------------------------"
