@@ -83,7 +83,7 @@ stages:
         steps:
           - script: |
               chmod +x ./tools/ci/branch_cutover_and_rebase.sh
-              ./tools/ci/branch_cutover_and_rebase.sh $(secrets)
+              ./tools/ci/branch_cutover_and_rebase.sh $(secrets) $(default_splunk_release_branch_version)
             displayName: "Verify new Release Version and cherrypick commits"
   - stage: ci
     displayName: "CI build (custom builders)"

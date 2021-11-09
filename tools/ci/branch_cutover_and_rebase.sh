@@ -1,16 +1,16 @@
 #!/bin/bash
 
-SPLUNK_MAJOR_VERSION="1.13"
 SECRET=$1
+DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION=$2
+SPLUNK_MAJOR_VERSION=`echo $DEFAULT_SPLUNK_RELEASE_BRANCH_VERSION | cut -d '.' -f 1,2`
 
 git config --global user.email "srikarrampally@gmail.com"
 git config --global user.name "srikarrampa"
 git clone https://github.com/splunk/flink.git
 
 cd flink
-git pull
 
-echo "cloned splunk/flink repo"
+echo "Cloned splunk/flink repo"
 echo "-------------------------------------------"
 
 # Add upstream which points to Flink repo and update splunk repo's master
@@ -31,7 +31,7 @@ fi
 
 new_release_tag_version=`git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' https://github.com/apache/flink.git 'release-1.13*' | tail -1 | cut -d - -f 2`
 new_upstream_release_tag="release-$new_release_tag_version"
-echo "Latest release tag: $new_upstream_release_tag"
+echo "New release tag: $new_upstream_release_tag"
 echo "-------------------------------------------"
 
 current_splunk_release_branch_version=`git -c 'versionsort.suffix=-' ls-remote --heads --sort='v:refname' https://github.com/splunk/flink.git 'release-1.13*' | tail -1 | cut -d - -f 2`
@@ -40,24 +40,29 @@ echo "Current Splunk release tag: $current_splunk_release_branch"
 echo "-------------------------------------------"
 
 new_splunk_release_tag="release-$new_release_tag_version-splunk"
-echo "Latest splunk release tag: $new_splunk_release_tag"
+echo "New splunk release tag: $new_splunk_release_tag"
 echo "-------------------------------------------"
 
 current_upstream_release_tag="release-$current_splunk_release_branch_version"
-echo "Old Splunk equivalent upstream release tag: $current_upstream_release_tag"
+echo "Current Splunk equivalent upstream release tag: $current_upstream_release_tag"
 echo "-------------------------------------------"
 
 if [[ $new_release_tag_version = $current_splunk_release_branch_version ]]; then
-    echo "Latest minor release tag matches with the current splunk release tag"
-    new_splunk_release_tag="release-$new_release_tag_version-splunk"
+    echo "Old minor release tag matches with the current splunk release tag"
     echo $new_splunk_release_tag
     echo "-------------------------------------------"
 else
-    echo "Latest minor release tag doesn't match with the current splunk release tag"
+    echo "Old minor release tag doesn't match with the current splunk release tag"
     echo "-------------------------------------------"
     #creates a splunk specific release branch
     git fetch upstream --tags
-    git checkout -b $new_splunk_release_tag $new_upstream_release_tag
+    checkout_result=$(git checkout -b $new_splunk_release_tag $new_upstream_release_tag 2>&1)
+
+    if [[ $checkout_result = *"fatal"* ]]; then
+        echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version"
+        echo "-------------------------------------------"
+        exit 1
+    fi
 
     # origin should be pointing to git@github.com:splunk/flink.git
     git push $url $new_splunk_release_tag
@@ -94,7 +99,7 @@ else
         echo "-------------------------------------------"
 
         if [ "$result" = *"CONFLICT"* ] || [ "$result" = *"failed"* ]; then
-            echo "Conflict occured. Please resolve manually"
+            echo "Conflict occurred. Please resolve manually"
             echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually"
             exit 1
         fi
