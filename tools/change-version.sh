@@ -17,8 +17,8 @@
 # limitations under the License.
 ################################################################################
 
-OLD="$1"
-NEW="$OLD-splunk-SNAPSHOT"
+OLD_VERSION="$1"
+NEW_VERSION="$2"
 
 
 HERE=` basename "$PWD"`
@@ -28,7 +28,7 @@ if [[ "$HERE" != "tools" ]]; then
 fi
 
 # change version in all pom files
-find .. -name 'pom.xml' -type f -exec perl -pi -e 's#<version>'"$OLD"'</version>#<version>'"$NEW"'</version>#' {} \;
+find .. -name 'pom.xml' -type f -exec perl -pi -e 's#<version>'"$OLD_VERSION"'</version>#<version>'"$NEW_VERSION"'</version>#' {} \;
 
 # change version of the quickstart property
-find .. -name 'pom.xml' -type f -exec perl -pi -e 's#<flink.version>'"$OLD"'</flink.version>#<flink.version>'"$NEW"'</flink.version>#' {} \;
+find .. -name 'pom.xml' -type f -exec perl -pi -e 's#<flink.version>'"$OLD_VERSION"'</flink.version>#<flink.version>'"$NEW_VERSION"'</flink.version>#' {} \;
