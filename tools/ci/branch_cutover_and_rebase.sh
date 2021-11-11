@@ -104,7 +104,7 @@ else
 
     # modify flink versioning to append splunk-SNAPSHOT
     cd tools
-    snapshot_version="$new_splunk_release_tag-splunk-SNAPSHOT"
+    snapshot_version="$new_splunk_release_tag-SNAPSHOT"
     sh change-version.sh $new_release_tag_version $snapshot_version
     cd ..
     git add .
