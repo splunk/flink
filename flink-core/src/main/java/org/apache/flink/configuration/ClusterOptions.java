@@ -211,4 +211,15 @@ public class ClusterOptions {
             return description;
         }
     }
+
+    @Documentation.ExcludeFromDocumentation
+    public static final ConfigOption<Boolean> DISABLE_SLOT_SHARING =
+            ConfigOptions.key("cluster.disable-slot-sharing")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription(
+                            Description.builder()
+                                    .text(
+                                            "Disables slot sharing when true, so subtasks from different tasks do not share slots.")
+                                    .build());
 }
