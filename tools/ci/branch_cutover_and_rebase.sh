@@ -29,7 +29,7 @@ if [[ $push_result = *"fatal"* ]]; then
     exit 1
 fi
 
-new_release_tag_version=`git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' https://github.com/apache/flink.git "release-$SPLUNK_MAJOR_VERSION*" | tail -1 | cut -d - -f 2`
+new_release_tag_version=`git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' upstream "release-$SPLUNK_MAJOR_VERSION*" | tail -1 | cut -d - -f 2`
 new_upstream_release_tag="release-$new_release_tag_version"
 echo "New release tag: $new_upstream_release_tag"
 echo "-------------------------------------------"
@@ -56,7 +56,7 @@ else
     #creates a splunk specific release branch
     git fetch upstream --tags
 
-    branch_exists=`git ls-remote --heads https://github.com/splunk/flink.git $new_splunk_release_tag | wc -l | tr -d ' '`
+    branch_exists=`git ls-remote --heads origin $new_splunk_release_tag | wc -l | tr -d ' '`
 
     if [[ "$branch_exists" == "1" ]]; then
         echo "New splunk branch $new_splunk_release_tag already exists. Please update the default splunk release branch version if required"
