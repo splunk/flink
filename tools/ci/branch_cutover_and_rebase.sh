@@ -97,7 +97,6 @@ else
         echo "-------------------------------------------"
 
         if [ "$result" = *"CONFLICT"* ] || [ "$result" = *"failed"* ]; then
-            echo "Conflict occurred. Please resolve manually"
             echo "Conflict occurred while cherry-picking for commit-sha: $commit and commit description: $commit_info . Please resolve manually"
             exit 1
         fi
