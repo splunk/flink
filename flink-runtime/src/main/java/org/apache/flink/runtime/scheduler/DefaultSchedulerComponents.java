@@ -100,12 +100,17 @@ public class DefaultSchedulerComponents {
                         slotPool, SystemClock.getInstance());
         final PhysicalSlotProvider physicalSlotProvider =
                 new PhysicalSlotProviderImpl(slotSelectionStrategy, slotPool);
+        final SlotSharingStrategy.Factory slotSharingStrategyFactory =
+                jobMasterConfiguration.getBoolean(ClusterOptions.DISABLE_SLOT_SHARING)
+                        ? NoSharingSlotSharingStrategy::createInstance
+                        : new LocalInputPreferredSlotSharingStrategy.Factory();
         final ExecutionSlotAllocatorFactory allocatorFactory =
                 new SlotSharingExecutionSlotAllocatorFactory(
                         physicalSlotProvider,
                         jobType == JobType.STREAMING,
                         bulkChecker,
-                        slotRequestTimeout);
+                        slotRequestTimeout,
+                        slotSharingStrategyFactory);
         return new DefaultSchedulerComponents(
                 new PipelinedRegionSchedulingStrategy.Factory(),
                 bulkChecker::start,
