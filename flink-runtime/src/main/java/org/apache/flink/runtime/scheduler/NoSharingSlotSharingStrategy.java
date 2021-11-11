@@ -18,7 +18,7 @@
 
 package org.apache.flink.runtime.scheduler;
 
-import org.apache.flink.runtime.jobmanager.scheduler.CoLocationGroupDesc;
+import org.apache.flink.runtime.jobmanager.scheduler.CoLocationGroup;
 import org.apache.flink.runtime.jobmanager.scheduler.SlotSharingGroup;
 import org.apache.flink.runtime.scheduler.strategy.ExecutionVertexID;
 import org.apache.flink.runtime.scheduler.strategy.SchedulingTopology;
@@ -57,7 +57,7 @@ public class NoSharingSlotSharingStrategy implements SlotSharingStrategy {
     public static SlotSharingStrategy createInstance(
             SchedulingTopology topology,
             Set<SlotSharingGroup> logicalSlotSharingGroups,
-            Set<CoLocationGroupDesc> coLocationGroups) {
+            Set<CoLocationGroup> coLocationGroups) {
         return new NoSharingSlotSharingStrategy();
     }
 }
