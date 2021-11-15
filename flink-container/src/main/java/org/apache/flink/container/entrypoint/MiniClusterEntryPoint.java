@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Splunk, Inc. All rights reserved.
+ */
+
 package org.apache.flink.container.entrypoint;
 
 import org.apache.flink.configuration.ConfigConstants;
