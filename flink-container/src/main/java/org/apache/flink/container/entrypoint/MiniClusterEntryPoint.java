@@ -20,21 +20,20 @@ import org.apache.flink.runtime.util.SignalHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-/**
- * Entry point for a mini cluster.
- */
+/** Entry point for a mini cluster. */
 public class MiniClusterEntryPoint {
     protected static final Logger LOG = LoggerFactory.getLogger(MiniClusterEntryPoint.class);
 
     public static void main(String[] args) {
         // startup checks and logging
-        EnvironmentInformation.logEnvironmentInfo(LOG, StandaloneSessionClusterEntrypoint.class.getSimpleName(), args);
+        EnvironmentInformation.logEnvironmentInfo(
+                LOG, StandaloneSessionClusterEntrypoint.class.getSimpleName(), args);
         SignalHandler.register(LOG);
         JvmShutdownSafeguard.installAsShutdownHook(LOG);
 
         EntrypointClusterConfiguration entrypointClusterConfiguration = null;
-        final CommandLineParser<EntrypointClusterConfiguration> commandLineParser = new CommandLineParser<>(new EntrypointClusterConfigurationParserFactory());
+        final CommandLineParser<EntrypointClusterConfiguration> commandLineParser =
+                new CommandLineParser<>(new EntrypointClusterConfigurationParserFactory());
 
         try {
             entrypointClusterConfiguration = commandLineParser.parse(args);
@@ -44,20 +43,29 @@ public class MiniClusterEntryPoint {
             System.exit(1);
         }
 
-        Configuration configuration = GlobalConfiguration.loadConfiguration(entrypointClusterConfiguration.getConfigDir());
+        Configuration configuration =
+                GlobalConfiguration.loadConfiguration(
+                        entrypointClusterConfiguration.getConfigDir());
 
-        final MiniClusterConfiguration miniClusterConfiguration = new MiniClusterConfiguration.Builder()
-                .setConfiguration(configuration)
-                // MiniClusterConfiguration.Builder defaults to 1 TM unless configured manually
-                .setNumTaskManagers(configuration.getInteger(ConfigConstants.LOCAL_NUMBER_TASK_MANAGER, 1))
-                .build();
+        final MiniClusterConfiguration miniClusterConfiguration =
+                new MiniClusterConfiguration.Builder()
+                        .setConfiguration(configuration)
+                        // MiniClusterConfiguration.Builder defaults to 1 TM unless configured
+                        // manually
+                        .setNumTaskManagers(
+                                configuration.getInteger(
+                                        ConfigConstants.LOCAL_NUMBER_TASK_MANAGER, 1))
+                        .build();
 
         MiniCluster miniCluster = new MiniCluster(miniClusterConfiguration);
 
         try {
             miniCluster.start();
         } catch (Exception e) {
-            LOG.error("Failed to start MiniCluster with configuration {}.", miniClusterConfiguration, e);
+            LOG.error(
+                    "Failed to start MiniCluster with configuration {}.",
+                    miniClusterConfiguration,
+                    e);
             System.exit(1);
         }
     }
