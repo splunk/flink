@@ -1,6 +1,7 @@
 variables:
   DOCKER_IMAGE: 'docker-hub.repo.splunkdev.net/openjdk:8'
   MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss.SSS" 
+  MAVEN_CLI_COMMON_OPTS: "-B -DskipTests -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true"
 
 image: $DOCKER_IMAGE
 
@@ -16,7 +17,6 @@ before_script:
   - apache-maven-3.2.5/bin/mvn --version
   - ./add_jackson_to_dist.sh
   - export MVN="$PWD/apache-maven-3.2.5/bin/mvn"
-  - export DEPLOY_SETTINGS="$PWD/deploySettings.xml"
   # change flink version for PR branches to upload test artifacts
   - |
     current_ver=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -36,36 +36,35 @@ build:artifacts:
     expire_in: 1 day
   script:
     # build binary, source, javadoc, and tests jars in order have them available for tar and upload
-    - su -c "$MVN -B -DskipTests -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true -Dhttps.protocols=TLSv1.2 -Dhttp.keepAlive=false -DinstallAtEnd=true install"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Dhttps.protocols=TLSv1.2 -Dhttp.keepAlive=false -DinstallAtEnd=true install"
     # create the tarball
     - mkdir $TARBALL_VERSION
     - cp -r flink-dist/target/flink-*-bin/flink-*/* $TARBALL_VERSION
     - mkdir build-target/deploy 
     - tar -czf build-target/deploy/${TARBALL_VERSION}.tgz $TARBALL_VERSION
 
-upload:local:
+.upload_base: &upload_base
   stage: upload
   dependencies:
     - build:artifacts
   script:
+    - export MAVEN_CLI_DEPLOY_OPTS="--settings $PWD/deploySettings.xml -Dartifactory_user=${SVC_ANTIFRAUD_CI_USER} -Dartifactory_pw=${SVC_ANTIFRAUD_CI_PWD} -DdeployAtEnd=true"
     # upload artifacts
-    - su -c "$MVN -B -Pdocs-and-source -Dartifactory_user=${SVC_ANTIFRAUD_CI_USER} -Dartifactory_pw=${SVC_ANTIFRAUD_CI_PWD} -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true -DskipTests -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local --settings $DEPLOY_SETTINGS -DretryFailedDeploymentCount=10 -DdeployAtEnd=true deploy"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS -DretryFailedDeploymentCount=10 $CUSTOM_JOB_OPTS deploy"
     # this will upload the release tarball jar. The jar will be uploaded to the artifactId folder, eg
     #   https://repo.splunk.com/artifactory/maven-splunk-local/org/apache/flink/flink-release/<version>/
-    - su -c "$MVN -B -Durl=https://repo.splunk.com/artifactory/maven-splunk-local -DrepositoryId=releases.repo.splunk.com -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz --settings $DEPLOY_SETTINGS -Dartifactory_user=${SVC_ANTIFRAUD_CI_USER} -Dartifactory_pw=${SVC_ANTIFRAUD_CI_PWD} -DdeployAtEnd=true deploy:deploy-file"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Durl=https://repo.splunk.com/artifactory/maven-splunk-local -DrepositoryId=releases.repo.splunk.com -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy:deploy-file"
+
+upload:local:
+  <<: *upload_base
   only:
     - /^release-.*-splunk.*$/
 
-upload:test:
-  stage: upload
-  dependencies:
-    - build:artifacts
-  script:
-    # upload artifacts
-    - su -c "$MVN -B -Pdocs-and-source -Dartifactory_user=${SVC_ANTIFRAUD_CI_USER} -Dartifactory_pw=${SVC_ANTIFRAUD_CI_PWD} -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true -DskipTests -DuniqueVersion=false -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local --settings $DEPLOY_SETTINGS -DretryFailedDeploymentCount=10 -DdeployAtEnd=true deploy"
-    # this will upload the release tarball jar. The jar will be uploaded to the artifactId folder, eg
-    #   https://repo.splunk.com/artifactory/maven-splunk-local/org/apache/flink/flink-release/<version>/
-    - su -c "$MVN -B -Durl=https://repo.splunk.com/artifactory/maven-splunk-local -DrepositoryId=releases.repo.splunk.com -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz -DuniqueVersion=false --settings $DEPLOY_SETTINGS -Dartifactory_user=${SVC_ANTIFRAUD_CI_USER} -Dartifactory_pw=${SVC_ANTIFRAUD_CI_PWD} -DdeployAtEnd=true deploy:deploy-file"
+upload:PR:
+  <<: *upload_base
+  variables:
+    # We only maintain one set of uploaded artifacts for each non-release/non-default branch, which corresponds to the latest commit
+    CUSTOM_JOB_OPTS: "-DuniqueVersion=false"
   except:
     - /^release-.*-splunk.*$/
 
@@ -73,6 +72,7 @@ upload:external:
   stage: upload
   script:
     # Upload to external repo
-    - su -c "$MVN -B -Pdocs-and-source -Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASS} -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true -DskipTests -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release --settings $DEPLOY_SETTINGS -DretryFailedDeploymentCount=10 -DdeployAtEnd=true deploy"
+    - export MAVEN_CLI_DEPLOY_OPTS="--settings $PWD/deploySettings.xml -Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASSWORD} -DdeployAtEnd=true"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS -DretryFailedDeploymentCount=10 deploy"
   only:
     - /^release-.*-splunk.*$/
