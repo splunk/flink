@@ -70,9 +70,8 @@ deactivate
 
 echo "directory entries"
 
-for entry in "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist/*
-do
-  echo "$entry"
+for file in "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist/* do
+    echo "$(basename "$file")"
 done
 
 echo "-----"
