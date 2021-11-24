@@ -70,7 +70,7 @@ deactivate
 
 echo "directory entries"
 
-ls "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist/*
+ls "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist
 
 echo "-----"
 
