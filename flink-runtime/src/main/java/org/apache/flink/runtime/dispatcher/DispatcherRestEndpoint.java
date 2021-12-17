@@ -28,6 +28,7 @@ import org.apache.flink.runtime.rest.RestServerEndpointConfiguration;
 import org.apache.flink.runtime.rest.handler.RestHandlerConfiguration;
 import org.apache.flink.runtime.rest.handler.RestHandlerSpecification;
 import org.apache.flink.runtime.rest.handler.job.JobSubmitHandler;
+import org.apache.flink.runtime.rest.handler.job.JobSubmitHandlerWithOptions;
 import org.apache.flink.runtime.rest.handler.legacy.ExecutionGraphCache;
 import org.apache.flink.runtime.rest.handler.legacy.metrics.MetricFetcher;
 import org.apache.flink.runtime.rpc.FatalErrorHandler;
@@ -96,7 +97,15 @@ public class DispatcherRestEndpoint extends WebMonitorEndpoint<DispatcherGateway
                 new JobSubmitHandler(
                         leaderRetriever, timeout, responseHeaders, executor, clusterConfiguration);
 
+        JobSubmitHandlerWithOptions jobSubmitHandlerWithOptions =
+                new JobSubmitHandlerWithOptions(
+                        leaderRetriever, timeout, responseHeaders, executor, clusterConfiguration);
+
         handlers.add(Tuple2.of(jobSubmitHandler.getMessageHeaders(), jobSubmitHandler));
+        handlers.add(
+                Tuple2.of(
+                        jobSubmitHandlerWithOptions.getMessageHeaders(),
+                        jobSubmitHandlerWithOptions));
 
         return handlers;
     }
