@@ -36,11 +36,11 @@ import java.util.Objects;
  * <p>This request only contains the names of files that must be present on the server, and defines
  * how these files are interpreted.
  */
-public final class JobSubmitRequestBody implements RequestBody {
+public class JobSubmitRequestBody implements RequestBody {
 
     public static final String FIELD_NAME_JOB_GRAPH = "jobGraphFileName";
-    private static final String FIELD_NAME_JOB_JARS = "jobJarFileNames";
-    private static final String FIELD_NAME_JOB_ARTIFACTS = "jobArtifactFileNames";
+    protected static final String FIELD_NAME_JOB_JARS = "jobJarFileNames";
+    protected static final String FIELD_NAME_JOB_ARTIFACTS = "jobArtifactFileNames";
 
     @JsonProperty(FIELD_NAME_JOB_GRAPH)
     @Nullable
