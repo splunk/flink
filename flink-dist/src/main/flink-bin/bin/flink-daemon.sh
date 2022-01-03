@@ -18,7 +18,7 @@
 ################################################################################
 
 # Start/stop a Flink daemon.
-USAGE="Usage: flink-daemon.sh (start|stop|stop-all) (taskexecutor|zookeeper|historyserver|standalonesession|standalonejob) [args]"
+USAGE="Usage: flink-daemon.sh (start|stop|stop-all) (taskexecutor|zookeeper|historyserver|standalonesession|standalonejob|minicluster) [args]"
 
 STARTSTOP=$1
 DAEMON=$2
@@ -48,6 +48,10 @@ case $DAEMON in
 
     (standalonejob)
         CLASS_TO_RUN=org.apache.flink.container.entrypoint.StandaloneApplicationClusterEntryPoint
+    ;;
+
+    (minicluster)
+        CLASS_TO_RUN=org.apache.flink.container.entrypoint.MiniClusterEntryPoint
     ;;
 
     (*)
