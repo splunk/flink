@@ -39,9 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
-/**
- * Entry point for a mini cluster.
- */
+/** Entry point for a mini cluster. */
 public class MiniClusterEntryPoint {
     protected static final Logger LOG = LoggerFactory.getLogger(MiniClusterEntryPoint.class);
 
@@ -51,7 +49,8 @@ public class MiniClusterEntryPoint {
 
     public static void main(String[] args) {
         // startup checks and logging
-        EnvironmentInformation.logEnvironmentInfo(LOG, MiniClusterEntryPoint.class.getSimpleName(), args);
+        EnvironmentInformation.logEnvironmentInfo(
+                LOG, MiniClusterEntryPoint.class.getSimpleName(), args);
         SignalHandler.register(LOG);
         JvmShutdownSafeguard.installAsShutdownHook(LOG);
 
@@ -64,7 +63,8 @@ public class MiniClusterEntryPoint {
         }
 
         EntrypointClusterConfiguration entrypointClusterConfiguration = null;
-        final CommandLineParser<EntrypointClusterConfiguration> commandLineParser = new CommandLineParser<>(new EntrypointClusterConfigurationParserFactory());
+        final CommandLineParser<EntrypointClusterConfiguration> commandLineParser =
+                new CommandLineParser<>(new EntrypointClusterConfigurationParserFactory());
 
         try {
             entrypointClusterConfiguration = commandLineParser.parse(args);
@@ -74,13 +74,19 @@ public class MiniClusterEntryPoint {
             System.exit(STARTUP_FAILURE_RETURN_CODE);
         }
 
-        Configuration configuration = GlobalConfiguration.loadConfiguration(entrypointClusterConfiguration.getConfigDir());
+        Configuration configuration =
+                GlobalConfiguration.loadConfiguration(
+                        entrypointClusterConfiguration.getConfigDir());
 
-        final MiniClusterConfiguration miniClusterConfiguration = new MiniClusterConfiguration.Builder()
-                .setConfiguration(configuration)
-                .setNumTaskManagers(configuration.getInteger(ConfigConstants.LOCAL_NUMBER_TASK_MANAGER, 1))
-                .setNumSlotsPerTaskManager(configuration.getInteger(TaskManagerOptions.NUM_TASK_SLOTS, 1))
-                .build();
+        final MiniClusterConfiguration miniClusterConfiguration =
+                new MiniClusterConfiguration.Builder()
+                        .setConfiguration(configuration)
+                        .setNumTaskManagers(
+                                configuration.getInteger(
+                                        ConfigConstants.LOCAL_NUMBER_TASK_MANAGER, 1))
+                        .setNumSlotsPerTaskManager(
+                                configuration.getInteger(TaskManagerOptions.NUM_TASK_SLOTS, 1))
+                        .build();
 
         MiniCluster miniCluster = new MiniCluster(miniClusterConfiguration);
 
@@ -92,27 +98,37 @@ public class MiniClusterEntryPoint {
         }
 
         try {
-            SecurityUtils.getInstalledContext().runSecured(() -> {
-                miniCluster.start();
-                return null;
-            });
+            SecurityUtils.getInstalledContext()
+                    .runSecured(
+                            () -> {
+                                miniCluster.start();
+                                return null;
+                            });
         } catch (Throwable t) {
-            final Throwable strippedThrowable = ExceptionUtils.stripException(t, UndeclaredThrowableException.class);
+            final Throwable strippedThrowable =
+                    ExceptionUtils.stripException(t, UndeclaredThrowableException.class);
             LOG.error("MiniCluster initialization failed.", strippedThrowable);
             System.exit(STARTUP_FAILURE_RETURN_CODE);
         }
 
-        miniCluster.getTerminationFuture().whenComplete((unused, throwable) -> {
-            final int returnCode;
+        miniCluster
+                .getTerminationFuture()
+                .whenComplete(
+                        (unused, throwable) -> {
+                            final int returnCode;
 
-            if (throwable != null) {
-                returnCode = RUNTIME_FAILURE_RETURN_CODE;
-            } else {
-                returnCode = SUCCESS_RETURN_CODE;
-            }
+                            if (throwable != null) {
+                                returnCode = RUNTIME_FAILURE_RETURN_CODE;
+                            } else {
+                                returnCode = SUCCESS_RETURN_CODE;
+                            }
 
-            LOG.info("Terminating cluster entrypoint process {} with exit code {}.", MiniClusterEntryPoint.class.getSimpleName(), returnCode, throwable);
-            System.exit(returnCode);
-        });
+                            LOG.info(
+                                    "Terminating cluster entrypoint process {} with exit code {}.",
+                                    MiniClusterEntryPoint.class.getSimpleName(),
+                                    returnCode,
+                                    throwable);
+                            System.exit(returnCode);
+                        });
     }
 }
