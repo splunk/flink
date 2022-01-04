@@ -27,6 +27,7 @@ import org.apache.flink.api.common.state.State;
 import org.apache.flink.api.common.state.StateDescriptor;
 import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.MetricOptions;
 import org.apache.flink.core.fs.CloseableRegistry;
@@ -261,6 +262,11 @@ public abstract class AbstractStreamOperator<OUT>
     public final void initializeState(StreamTaskStateInitializer streamTaskStateManager)
             throws Exception {
 
+        // We are being called from the StreamTask thread.
+        // The ExecutionConfig is tied to the task thread which runs this operator.
+        // I'm registering here instead of in StreamTask to allow lightweight test code to leverage
+        // this functionality as well.
+        KryoSerializer.registerExecutionConfigForTaskThread(getExecutionConfig());
         final TypeSerializer<?> keySerializer =
                 config.getStateKeySerializer(getUserCodeClassloader());
 
