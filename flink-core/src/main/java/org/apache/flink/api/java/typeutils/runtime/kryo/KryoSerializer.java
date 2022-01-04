@@ -53,8 +53,10 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -82,6 +84,22 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
     private static final boolean CONCURRENT_ACCESS_CHECK =
             LOG.isDebugEnabled() || KryoSerializerDebugInitHelper.setToDebug;
 
+    // The ExecutionConfig from this Task thread. Garbage-collected when the Task threads ends.
+    private static final ThreadLocal<ExecutionConfig> EXECUTION_CONFIG = new ThreadLocal<>();
+
+    /**
+     * Bind the ExecutionConfig for the Task thread.
+     *
+     * <p>This is called from within the Task thread when the ExecutionConfig has been deserialized.
+     *
+     * <p>The registration is thread-local value. The registered ExecutionConfig is eligible for
+     * garbage collection as soon as the task thread ends. This is at the same time that any
+     * instantiated serializer also becomes eligible for garbage collection.
+     */
+    public static void registerExecutionConfigForTaskThread(ExecutionConfig executionConfig) {
+        EXECUTION_CONFIG.set(executionConfig);
+    }
+
     static {
         configureKryoLogging();
     }
@@ -99,6 +117,12 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
      * into account registration overwrites.
      */
     private LinkedHashMap<String, KryoRegistration> kryoRegistrations;
+
+    /**
+     * Use a separate transient field to not break serialization and to ensure we are not
+     * snapshotting added serializers.
+     */
+    private transient List<KryoRegistration> ephemeralKryoRegistrations;
 
     private final Class<T> type;
 
@@ -190,6 +214,24 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
             LinkedHashMap<Class<?>, SerializableSerializer<?>> defaultSerializers,
             LinkedHashMap<Class<?>, Class<? extends Serializer<?>>> defaultSerializerClasses,
             LinkedHashMap<String, KryoRegistration> kryoRegistrations) {
+
+        try {
+            ExecutionConfig executionConfig = EXECUTION_CONFIG.get();
+            if (executionConfig != null) {
+                ephemeralKryoRegistrations = new ArrayList<>();
+                for (Map.Entry<Class<?>, Class<? extends Serializer<?>>> entry :
+                        executionConfig
+                                .getEphemeralRegisteredTypesWithKryoSerializerClasses()
+                                .entrySet()) {
+                    Class<?> typeClass = entry.getKey();
+                    Class<? extends Serializer<?>> serializerClass = entry.getValue();
+                    ephemeralKryoRegistrations.add(
+                            new KryoRegistration(typeClass, serializerClass));
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to load custom Kryo serializer class.", e);
+        }
 
         this.type = checkNotNull(type, "Type class cannot be null.");
         this.defaultSerializerClasses =
@@ -487,6 +529,10 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
                 kryo.addDefaultSerializer(entry.getKey(), entry.getValue());
             }
 
+            if (ephemeralKryoRegistrations != null) {
+                KryoUtils.applyRegistrations(this.kryo, ephemeralKryoRegistrations);
+            }
+
             KryoUtils.applyRegistrations(this.kryo, kryoRegistrations.values());
 
             kryo.setRegistrationRequired(false);
@@ -500,6 +546,7 @@ public class KryoSerializer<T> extends TypeSerializer<T> {
 
     @Override
     public TypeSerializerSnapshot<T> snapshotConfiguration() {
+        // Do not snapshot the ephemeral kryo registrations
         return new KryoSerializerSnapshot<>(
                 type, defaultSerializers, defaultSerializerClasses, kryoRegistrations);
     }
