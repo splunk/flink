@@ -223,6 +223,13 @@ public class MiniCluster implements AutoCloseableAsync {
         this.taskManagers = new ArrayList<>(miniClusterConfiguration.getNumTaskManagers());
     }
 
+    public CompletableFuture<Void> getTerminationFuture() {
+        synchronized (lock) {
+            checkState(running, "MiniCluster is not yet running.");
+            return terminationFuture;
+        }
+    }
+
     public CompletableFuture<URI> getRestAddress() {
         synchronized (lock) {
             checkState(running, "MiniCluster is not yet running or has already been shut down.");

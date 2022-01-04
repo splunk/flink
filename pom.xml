@@ -1557,9 +1557,6 @@ under the License.
 
 						<!-- AWS SDK config that does not support license headers -->
 						<exclude>**/awssdk/global/handlers/execution.interceptors</exclude>
-
-						<!-- Splunk config for MiniClusterEntryPoint -->
-						<exclude>flink-container/src/main/java/org/apache/flink/container/entrypoint/MiniClusterEntryPoint.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
