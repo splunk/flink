@@ -1,0 +1,83 @@
+################################################################################
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+variables:
+  DOCKER_IMAGE: 'docker-hub.repo.splunkdev.net/openjdk:8'
+  MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss.SSS" 
+  MAVEN_CLI_COMMON_OPTS: "-B -DskipTests -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true"
+  REPOSITORY_SETTINGS: "-Dartifactory_user=$SVC_ANTIFRAUD_CI_USER -Dartifactory_pw=$SVC_ANTIFRAUD_CI_PWD"
+
+image: $DOCKER_IMAGE
+
+stages:
+    - upload
+
+.upload_base: &upload_base
+  stage: upload
+  before_script:
+    - javac -version
+    - 'wget https://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip'
+    - unzip -qq apache-maven-3.2.5-bin.zip
+    - rm apache-maven-3.2.5-bin.zip
+    - apache-maven-3.2.5/bin/mvn --version
+    - ./add_jackson_to_dist.sh
+    - export MVN="$PWD/apache-maven-3.2.5/bin/mvn"
+    # change flink version for PR branches to upload test artifacts
+    - |
+      current_ver=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
+      [[ ! $CI_COMMIT_REF_NAME =~ ^release-.*-splunk.*$ ]] && cd tools && sh change-version.sh $current_ver "${current_ver}-$CI_COMMIT_REF_NAME" && cd ..
+    - export FLINK_VERSION=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - export TARBALL_VERSION="flink-$FLINK_VERSION"
+    - export MAVEN_CLI_DEPLOY_OPTS="--settings $PWD/deploySettings.xml $REPOSITORY_SETTINGS -DretryFailedDeploymentCount=10"
+    # required to minimize connection reset errors in aws when mvn downloads jars
+    - sysctl -w net.ipv4.tcp_keepalive_time=60
+    - sysctl -w net.ipv4.tcp_keepalive_intvl=60
+    - sysctl -w net.ipv4.tcp_keepalive_probes=10
+  script:
+    # upload artifacts
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+    # create and upload tarball
+    - mkdir $TARBALL_VERSION
+    - cp -r flink-dist/target/flink-*-bin/flink-*/* $TARBALL_VERSION
+    - mkdir build-target/deploy 
+    - tar -czf build-target/deploy/${TARBALL_VERSION}.tgz $TARBALL_VERSION
+    # this will upload the release tarball jar. The jar will be uploaded to the artifactId folder, eg
+    #   https://repo.splunk.com/artifactory/maven-splunk-local/org/apache/flink/flink-release/<version>/
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Durl=https://repo.splunk.com/artifactory/maven-splunk-local -DrepositoryId=releases.repo.splunk.com -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy:deploy-file"
+
+upload:local:
+  <<: *upload_base
+  only:
+    - /^release-.*-splunk.*$/
+
+upload:PR:
+  <<: *upload_base
+  variables:
+    # We only maintain one set of uploaded artifacts for each non-release/non-default branch, which corresponds to the latest commit
+    CUSTOM_JOB_OPTS: "-DuniqueVersion=false"
+  except:
+    - /^release-.*-splunk.*$/
+
+upload:external:
+  <<: *upload_base
+  variables:
+    REPOSITORY_SETTINGS: "-Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASSWORD}"
+  script:
+    # Upload to external repo, for external upload we don't need to upload the tarball
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+  only:
+    - /^release-.*-splunk.*$/
