@@ -393,6 +393,18 @@ under the License.
 									<pattern>org.apache.flink.runtime.util</pattern>
 									<shadedPattern>org.apache.flink.fs.s3presto.common</shadedPattern>
 								</relocation>
+								<relocation>
+									<pattern>com.fasterxml.jackson</pattern>
+									<shadedPattern>org.apache.flink.fs.s3presto.shaded.com.fasterxml.jackson</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.apache.commons</pattern>
+									<shadedPattern>org.apache.flink.fs.s3presto.shaded.org.apache.commons</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>com.google</pattern>
+									<shadedPattern>org.apache.flink.fs.s3presto.shaded.com.google</shadedPattern>
+								</relocation>
 							</relocations>
 							<filters>
 								<filter>
