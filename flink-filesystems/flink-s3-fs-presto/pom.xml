@@ -405,6 +405,10 @@ under the License.
 									<pattern>com.google</pattern>
 									<shadedPattern>org.apache.flink.fs.s3presto.shaded.com.google</shadedPattern>
 								</relocation>
+								<relocation>
+									<pattern>org.apache.http</pattern>
+									<shadedPattern>org.apache.flink.fs.s3presto.shaded.org.apache.http</shadedPattern>
+								</relocation>
 							</relocations>
 							<filters>
 								<filter>
