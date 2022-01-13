@@ -213,6 +213,10 @@ under the License.
 									<pattern>com.google</pattern>
 									<shadedPattern>org.apache.flink.fs.s3hadoop.shaded.com.google</shadedPattern>
 								</relocation>
+								<relocation>
+									<pattern>org.apache.http</pattern>
+									<shadedPattern>org.apache.flink.fs.s3hadoop.shaded.org.apache.http</shadedPattern>
+								</relocation>
 							</relocations>
 							<filters>
 								<filter>
