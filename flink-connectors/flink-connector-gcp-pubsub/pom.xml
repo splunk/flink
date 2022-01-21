@@ -111,14 +111,14 @@ under the License.
 							<shadeTestJar>false</shadeTestJar>
 							<artifactSet>
 								<includes>
-									<include>com.google.*:*</include>
+									<include>com.google.protobuf:*</include>
 								</includes>
 							</artifactSet>
 							<relocations>
 								<!-- relocate google dependencies because they tend to clash downstream -->
 								<relocation>
-									<pattern>com.google</pattern>
-									<shadedPattern>org.apache.flink.streaming.connectors.pubsub.shaded</shadedPattern>
+									<pattern>com.google.protobuf</pattern>
+									<shadedPattern>org.apache.flink.streaming.connectors.pubsub.shaded.com.google.protobuf</shadedPattern>
 								</relocation>
 							</relocations>
 							<filters>
