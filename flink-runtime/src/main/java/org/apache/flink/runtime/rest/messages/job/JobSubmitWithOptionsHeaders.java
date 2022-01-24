@@ -32,7 +32,7 @@ import org.apache.flink.shaded.netty4.io.netty.handler.codec.http.HttpResponseSt
 public class JobSubmitWithOptionsHeaders
         implements MessageHeaders<
                 JobSubmitRequestWithOptionsBody, JobSubmitResponseBody, EmptyMessageParameters> {
-    private static final String URL = "/jobs:submitWithOptions";
+    private static final String URL = "/jobs/submitWithOptions";
     private static final JobSubmitWithOptionsHeaders INSTANCE = new JobSubmitWithOptionsHeaders();
 
     private JobSubmitWithOptionsHeaders() {}

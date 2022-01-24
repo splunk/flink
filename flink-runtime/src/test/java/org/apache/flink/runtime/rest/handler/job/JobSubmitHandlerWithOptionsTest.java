@@ -22,12 +22,12 @@ import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.BlobServerOptions;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.TaskManagerOptions;
 import org.apache.flink.runtime.blob.BlobServer;
 import org.apache.flink.runtime.blob.VoidBlobStore;
 import org.apache.flink.runtime.dispatcher.DispatcherGateway;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.jobgraph.JobVertex;
-import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.messages.Acknowledge;
 import org.apache.flink.runtime.net.SSLUtilsTest;
 import org.apache.flink.runtime.rest.handler.HandlerRequest;
@@ -48,10 +48,12 @@ import org.junit.runners.Parameterized;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -102,33 +104,39 @@ public class JobSubmitHandlerWithOptionsTest {
     }
 
     @Test
-    public void testSuccesfulJobSubmissionWithSavepointOptionsSet() throws Exception {
+    public void testSuccessfulJobSubmissionWithOptionsSet() throws Exception {
         // Given
         final String testSavepointPath = "testSavepointPath";
         final boolean testAllowNonRestoredState = true;
-        final boolean scaleToSingleTaskManager = false;
-        final String initialTestJobID = "00000000000000000000000000000000";
-        final String changedTestJobID = "11111111111111111111111111111111";
+        final boolean scaleToSingleTaskManager = true;
+        final JobID initialTestJobID = JobID.generate();
+        final JobID changedTestJobID = JobID.generate();
+        final JobVertex jobVertex1 = new JobVertex("vertex1");
+        final JobVertex jobVertex2 = new JobVertex("vertex2");
+        jobVertex1.setParallelism(2);
+        jobVertex2.setParallelism(6);
         final Map<String, Integer> testVertexIdParallelismMap =
                 Stream.of(
                                 new String[][] {
-                                    {"22222222222222222222222222222222", "2"},
-                                    {"33333333333333333333333333333333", "3"},
+                                    {jobVertex1.getID().toString(), "3"},
+                                    {jobVertex2.getID().toString(), "7"},
                                 })
                         .collect(
                                 Collectors.toMap(
                                         data -> data[0], data -> Integer.valueOf(data[1])));
+        final int numberOfTaskSlots = 5;
+        final String validClassPathUrl = "file://jar1";
+        final String invalidClassPathUrl = "invalidUrl";
+        final List<String> classPathUrls =
+                Stream.of(validClassPathUrl, invalidClassPathUrl).collect(Collectors.toList());
         final Path jobGraphFile = TEMPORARY_FOLDER.newFile().toPath();
+        configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, numberOfTaskSlots);
 
         try (ObjectOutputStream objectOut =
                 new ObjectOutputStream(Files.newOutputStream(jobGraphFile))) {
-            JobGraph jobGraph = new JobGraph(JobID.fromHexString(initialTestJobID), "testJob");
-            testVertexIdParallelismMap.forEach(
-                    ((k, v) -> {
-                        JobVertex jobVertex = new JobVertex(k, JobVertexID.fromHexString(k));
-                        jobVertex.setParallelism(v);
-                        jobGraph.addVertex(jobVertex);
-                    }));
+            JobGraph jobGraph = new JobGraph(initialTestJobID, "testJob");
+            jobGraph.addVertex(jobVertex1);
+            jobGraph.addVertex(jobVertex2);
             objectOut.writeObject(jobGraph);
         }
 
@@ -156,11 +164,12 @@ public class JobSubmitHandlerWithOptionsTest {
                         jobGraphFile.getFileName().toString(),
                         Collections.emptyList(),
                         Collections.emptyList(),
-                        changedTestJobID,
+                        changedTestJobID.toHexString(),
                         testSavepointPath,
                         testAllowNonRestoredState,
                         testVertexIdParallelismMap,
-                        scaleToSingleTaskManager);
+                        scaleToSingleTaskManager,
+                        classPathUrls);
 
         // When
         handler.handleRequest(
@@ -182,13 +191,99 @@ public class JobSubmitHandlerWithOptionsTest {
         Assert.assertEquals(
                 testSavepointPath,
                 submittedJobGraph.getSavepointRestoreSettings().getRestorePath());
-        Assert.assertEquals(changedTestJobID, submittedJobGraph.getJobID().toString());
-        testVertexIdParallelismMap.forEach(
-                (k, v) ->
-                        Assert.assertEquals(
-                                submittedJobGraph
-                                        .findVertexByID(JobVertexID.fromHexString(k))
-                                        .getParallelism(),
-                                v.intValue()));
+        Assert.assertEquals(
+                changedTestJobID.toHexString(), submittedJobGraph.getJobID().toHexString());
+        Assert.assertEquals(
+                (int) testVertexIdParallelismMap.get(jobVertex1.getID().toString()),
+                submittedJobGraph.findVertexByID(jobVertex1.getID()).getParallelism());
+        Assert.assertEquals(
+                numberOfTaskSlots,
+                submittedJobGraph.findVertexByID(jobVertex2.getID()).getParallelism());
+        Assert.assertEquals(
+                Stream.of(new URL(validClassPathUrl)).collect(Collectors.toList()),
+                submittedJobGraph.getClasspaths());
+    }
+
+    @Test
+    public void testSuccessfulJobSubmissionWithOptionsPartlySet() throws Exception {
+        // Given
+        final boolean testAllowNonRestoredState = false;
+        final boolean scaleToSingleTaskManager = false;
+        final JobID initialTestJobID = JobID.generate();
+        final JobID changedTestJobID = JobID.generate();
+        final JobVertex jobVertex1 = new JobVertex("vertex1");
+        final JobVertex jobVertex2 = new JobVertex("vertex2");
+        jobVertex1.setParallelism(2);
+        jobVertex2.setParallelism(6);
+        final int numberOfTaskSlots = 5;
+        final Path jobGraphFile = TEMPORARY_FOLDER.newFile().toPath();
+        configuration.setInteger(TaskManagerOptions.NUM_TASK_SLOTS, numberOfTaskSlots);
+
+        try (ObjectOutputStream objectOut =
+                new ObjectOutputStream(Files.newOutputStream(jobGraphFile))) {
+            JobGraph jobGraph = new JobGraph(initialTestJobID, "testJob");
+            jobGraph.addVertex(jobVertex1);
+            jobGraph.addVertex(jobVertex2);
+            objectOut.writeObject(jobGraph);
+        }
+
+        CompletableFuture<JobGraph> submittedJobGraphFuture = new CompletableFuture<>();
+        DispatcherGateway dispatcherGateway =
+                new TestingDispatcherGateway.Builder()
+                        .setBlobServerPort(blobServer.getPort())
+                        .setSubmitFunction(
+                                submittedJobGraph -> {
+                                    submittedJobGraphFuture.complete(submittedJobGraph);
+                                    return CompletableFuture.completedFuture(Acknowledge.get());
+                                })
+                        .build();
+
+        JobSubmitHandlerWithOptions handler =
+                new JobSubmitHandlerWithOptions(
+                        () -> CompletableFuture.completedFuture(dispatcherGateway),
+                        RpcUtils.INF_TIMEOUT,
+                        Collections.emptyMap(),
+                        TestingUtils.defaultExecutor(),
+                        configuration);
+
+        JobSubmitRequestWithOptionsBody request =
+                new JobSubmitRequestWithOptionsBody(
+                        jobGraphFile.getFileName().toString(),
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        changedTestJobID.toHexString(),
+                        null,
+                        testAllowNonRestoredState,
+                        null,
+                        scaleToSingleTaskManager,
+                        null);
+
+        // When
+        handler.handleRequest(
+                        new HandlerRequest<>(
+                                request,
+                                EmptyMessageParameters.getInstance(),
+                                Collections.emptyMap(),
+                                Collections.emptyMap(),
+                                Collections.singletonList(jobGraphFile.toFile())),
+                        dispatcherGateway)
+                .get();
+
+        // Then
+        Assert.assertTrue("No JobGraph was submitted.", submittedJobGraphFuture.isDone());
+        final JobGraph submittedJobGraph = submittedJobGraphFuture.get();
+        Assert.assertEquals(
+                testAllowNonRestoredState,
+                submittedJobGraph.getSavepointRestoreSettings().allowNonRestoredState());
+        Assert.assertNull(submittedJobGraph.getSavepointRestoreSettings().getRestorePath());
+        Assert.assertEquals(
+                changedTestJobID.toHexString(), submittedJobGraph.getJobID().toHexString());
+        Assert.assertEquals(
+                jobVertex1.getParallelism(),
+                submittedJobGraph.findVertexByID(jobVertex1.getID()).getParallelism());
+        Assert.assertEquals(
+                jobVertex2.getParallelism(),
+                submittedJobGraph.findVertexByID(jobVertex2.getID()).getParallelism());
+        Assert.assertEquals(Collections.emptyList(), submittedJobGraph.getClasspaths());
     }
 }
