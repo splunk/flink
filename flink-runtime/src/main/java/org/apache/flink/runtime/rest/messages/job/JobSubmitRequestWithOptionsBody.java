@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -38,6 +39,7 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
             "operatorParallelismChangeMap";
     private static final String FIELD_NAME_SCALE_TO_SINGLE_TASK_MANAGER =
             "scaleToSingleTaskManager";
+    private static final String FIELD_NAME_CLASSPATH_URLS = "classpathUrls";
 
     @JsonProperty(FIELD_NAME_JOB_ID)
     @Nonnull
@@ -57,6 +59,9 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
     @JsonProperty(FIELD_NAME_SCALE_TO_SINGLE_TASK_MANAGER)
     public final boolean scaleToSingleTaskManager;
 
+    @JsonProperty(FIELD_NAME_CLASSPATH_URLS)
+    public final List<String> classpathUrls;
+
     @JsonCreator
     public JobSubmitRequestWithOptionsBody(
             @Nullable @JsonProperty(FIELD_NAME_JOB_GRAPH) String jobGraphFileName,
@@ -68,14 +73,15 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
             @JsonProperty(FIELD_NAME_ALLOW_NON_RESTORED_STATE) boolean allowNonRestoredState,
             @Nullable @JsonProperty(FIELD_NAME_OPERATOR_PARALLELISM_CHANGE_MAP)
                     Map<String, Integer> operatorParallelismChangeMap,
-            @JsonProperty(FIELD_NAME_SCALE_TO_SINGLE_TASK_MANAGER)
-                    boolean scaleToSingleTaskManager) {
+            @JsonProperty(FIELD_NAME_SCALE_TO_SINGLE_TASK_MANAGER) boolean scaleToSingleTaskManager,
+            @Nullable @JsonProperty(FIELD_NAME_CLASSPATH_URLS) List<String> classpathUrls) {
         super(jobGraphFileName, jarFileNames, artifactFileNames);
         this.jobId = jobId;
         this.savepointDirectoryPath = savepointDirectoryPath;
         this.allowNonRestoredState = allowNonRestoredState;
         this.operatorParallelismChangeMap = operatorParallelismChangeMap;
         this.scaleToSingleTaskManager = scaleToSingleTaskManager;
+        this.classpathUrls = classpathUrls;
     }
 
     @Override
@@ -94,7 +100,8 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
                 && Objects.equals(savepointDirectoryPath, that.savepointDirectoryPath)
                 && allowNonRestoredState == that.allowNonRestoredState
                 && Objects.equals(operatorParallelismChangeMap, that.operatorParallelismChangeMap)
-                && scaleToSingleTaskManager == that.scaleToSingleTaskManager;
+                && scaleToSingleTaskManager == that.scaleToSingleTaskManager
+                && Objects.equals(classpathUrls, that.classpathUrls);
     }
 
     @Override
@@ -107,7 +114,8 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
                 savepointDirectoryPath,
                 allowNonRestoredState,
                 operatorParallelismChangeMap,
-                scaleToSingleTaskManager);
+                scaleToSingleTaskManager,
+                classpathUrls);
     }
 
     @Override
@@ -132,6 +140,8 @@ public class JobSubmitRequestWithOptionsBody extends JobSubmitRequestBody {
                 + operatorParallelismChangeMap
                 + ", scaleToSingleTaskManager="
                 + scaleToSingleTaskManager
+                + ", classpathUrls="
+                + classpathUrls
                 + '}';
     }
 }

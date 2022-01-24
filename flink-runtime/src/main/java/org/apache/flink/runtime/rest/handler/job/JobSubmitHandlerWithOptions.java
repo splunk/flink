@@ -34,10 +34,14 @@ import org.apache.flink.runtime.webmonitor.retriever.GatewayRetriever;
 
 import org.apache.flink.shaded.netty4.io.netty.handler.codec.http.HttpResponseStatus;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /** This handler can be used to submit jobs to a Flink cluster with savepoint settings. */
 public class JobSubmitHandlerWithOptions
@@ -82,6 +86,20 @@ public class JobSubmitHandlerWithOptions
                         scaleOperatorParallelismsToAvailableTaskSlots(jobGraph);
                     }
 
+                    if (requestBody.classpathUrls != null) {
+                        jobGraph.setClasspaths(
+                                requestBody.classpathUrls.stream()
+                                        .flatMap(
+                                                a -> {
+                                                    try {
+                                                        return Stream.of(new URL(a));
+                                                    } catch (MalformedURLException e) {
+                                                        return Stream.empty();
+                                                    }
+                                                })
+                                        .collect(Collectors.toList()));
+                    }
+
                     return jobGraph;
                 });
     }
@@ -108,7 +126,7 @@ public class JobSubmitHandlerWithOptions
 
     private void setParallelismForJobVertex(
             JobVertex jobVertex, Map<String, Integer> operatorParallelismChangeMap) {
-        String jobVertexId = jobVertex.getID().toString();
+        String jobVertexId = jobVertex.getID().toHexString();
         if (!operatorParallelismChangeMap.containsKey(jobVertexId)) {
             throw new CompletionException(
                     new RestHandlerException(
