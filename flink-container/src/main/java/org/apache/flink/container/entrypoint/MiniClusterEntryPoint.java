@@ -22,6 +22,9 @@ import org.apache.flink.configuration.ConfigConstants;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.configuration.TaskManagerOptions;
+import org.apache.flink.core.fs.FileSystem;
+import org.apache.flink.core.plugin.PluginManager;
+import org.apache.flink.core.plugin.PluginUtils;
 import org.apache.flink.runtime.entrypoint.EntrypointClusterConfiguration;
 import org.apache.flink.runtime.entrypoint.EntrypointClusterConfigurationParserFactory;
 import org.apache.flink.runtime.entrypoint.parser.CommandLineParser;
@@ -89,7 +92,8 @@ public class MiniClusterEntryPoint {
                         .build();
 
         MiniCluster miniCluster = new MiniCluster(miniClusterConfiguration);
-
+        PluginManager pluginManager = PluginUtils.createPluginManagerFromRootFolder(configuration);
+        FileSystem.initialize(configuration, pluginManager);
         try {
             SecurityUtils.install(new SecurityConfiguration(configuration));
         } catch (Exception e) {
