@@ -41,6 +41,9 @@ source "${CI_DIR}/maven-utils.sh"
 echo "Maven version:"
 run_mvn -version
 
+echo "Install flink-shaded-jackson-parent"
+cd flink-shaded-jackson-parent && run_mvn clean install -DskipTests -Dfindbugs.skip -Dcheckstyle.skip -Denforcer.skip -Drat.skip && cd "$OLDPWD"
+
 echo "=============================================================================="
 echo "Compiling Flink"
 echo "=============================================================================="
