@@ -24,7 +24,7 @@
 # we can't run flink and have json logging.
 
 readonly jars="jackson-core jackson-databind jackson-annotations"
-readonly version="2.12.1"
+readonly version="2.12.6"
 # add all of our jars as includes in the assembly file, which puts together
 # the dist package using the maven assembly plugin. This will put our
 # jackson jars in the dist lib directory so it's available at runtime
