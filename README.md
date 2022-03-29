@@ -75,6 +75,7 @@ Prerequisites for building Flink:
 ```
 git clone https://github.com/apache/flink.git
 cd flink
+cd flink-shaded-jackson-parent && cd clean install -DskipTests -Dfindbugs.skip -Dcheckstyle.skip -Denforcer.skip -Drat.skip && cd "$OLDPWD"
 mvn clean package -DskipTests # this will take up to 10 minutes
 ```
 
