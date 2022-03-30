@@ -34,7 +34,6 @@ stages:
     - unzip -qq apache-maven-3.2.5-bin.zip
     - rm apache-maven-3.2.5-bin.zip
     - apache-maven-3.2.5/bin/mvn --version
-    - ./add_jackson_to_dist.sh
     - export MVN="$PWD/apache-maven-3.2.5/bin/mvn"
     # change flink version for PR branches to upload test artifacts
     - |

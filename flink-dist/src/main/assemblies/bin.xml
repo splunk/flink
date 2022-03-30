@@ -29,6 +29,21 @@ under the License.
 	<baseDirectory>flink-${project.version}</baseDirectory>
 
 	<dependencySets>
+		<!-- we need to add jackson as a runtime dependency of the
+		 flink-dist project so the bash-utils.jar that is run
+		 to start flink stuff will be able to do json logging
+		 when it runs. Without having these runtime dependencies,
+		 we can't run flink and have json logging. -->
+		<dependencySet>
+			<outputDirectory>lib</outputDirectory>
+			<unpack>false</unpack>
+
+			<includes>
+				 <include>com.fasterxml.jackson.core:jackson-core:jar:${jackson.version}</include>
+				 <include>com.fasterxml.jackson.core:jackson-databind:jar:${jackson.databind.version}</include>
+				 <include>com.fasterxml.jackson.core:jackson-annotations:jar:${jackson.version}</include>
+			</includes>
+		</dependencySet>
 		<dependencySet>
 			<outputDirectory>lib</outputDirectory>
 			<unpack>false</unpack>
