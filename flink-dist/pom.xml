@@ -469,24 +469,26 @@ under the License.
 			when building for Scala 2.11. -->
 			<dependencies>
 
- <dependency>
- <groupId>com.fasterxml.jackson.core</groupId>
- <artifactId>jackson-core</artifactId>
- <version>2.12.6</version>
- <scope>runtime</scope>
- </dependency>
- <dependency>
- <groupId>com.fasterxml.jackson.core</groupId>
- <artifactId>jackson-databind</artifactId>
- <version>2.12.6</version>
- <scope>runtime</scope>
- </dependency>
- <dependency>
- <groupId>com.fasterxml.jackson.core</groupId>
- <artifactId>jackson-annotations</artifactId>
- <version>2.12.6</version>
- <scope>runtime</scope>
- </dependency>
+				<!-- Jackson binaries used for logging -->
+
+				<dependency>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+					<version>${jackson.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+					<version>${jackson.databind.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+					<version>${jackson.version}</version>
+					<scope>runtime</scope>
+				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
 					<artifactId>flink-scala-shell_${scala.binary.version}</artifactId>
