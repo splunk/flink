@@ -49,10 +49,10 @@ stages:
     - sysctl -w net.ipv4.tcp_keepalive_probes=10
 
   script:
-    # upload flink artifacts
-    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # Upload flink shaded jackson artifacts
     - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+    # upload flink artifacts
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # create and upload tarball
     - mkdir $TARBALL_VERSION
     - cp -r flink-dist/target/flink-*-bin/flink-*/* $TARBALL_VERSION
