@@ -84,3 +84,13 @@ upload:external:
     - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
   only:
     - /^release-.*-splunk.*$/
+
+upload:shaded:
+  <<: *upload_base
+  variables:
+    REPOSITORY_SETTINGS: "-Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASS}"
+  script:
+    # Upload flink-shaded-jackson-parent artifact
+    - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -Durl=https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+  rules:
+    - when: manual
