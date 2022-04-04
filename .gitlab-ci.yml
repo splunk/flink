@@ -46,10 +46,10 @@ stages:
     - sysctl -w net.ipv4.tcp_keepalive_time=60
     - sysctl -w net.ipv4.tcp_keepalive_intvl=60
     - sysctl -w net.ipv4.tcp_keepalive_probes=10
+    # Install shaded Jackson artifacts
+    - su -c "cd flink-shaded-jackson-parent && $MVN -B install -DskipTests -Dfindbugs.skip -Dcheckstyle.skip -Denforcer.skip -Drat.skip"
 
   script:
-    # Upload flink shaded jackson artifacts
-    - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # upload flink artifacts
     - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # create and upload tarball
@@ -79,6 +79,8 @@ upload:external:
   variables:
     REPOSITORY_SETTINGS: "-Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASS}"
   script:
+    # Upload flink shaded jackson artifacts
+    - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # Upload to external repo, for external upload we don't need to upload the tarball
     - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
   only:
