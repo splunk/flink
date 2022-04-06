@@ -252,7 +252,7 @@ try:
                   "is complete, or do this in the flink-python directory of the flink source "
                   "directory.")
             sys.exit(-1)
-            
+
     apache_flink_libraries_dependency = 'apache-flink-libraries==%s' % VERSION
 
     script_names = ["pyflink-shell.sh", "find-flink-home.sh"]
