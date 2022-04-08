@@ -68,6 +68,12 @@ rm -rf .conda/pkgs
 
 deactivate
 
+echo "directory entries"
+
+ls "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist
+
+echo "-----"
+
 PYFLINK_PACKAGE_FILE=$(basename "${FLINK_PYTHON_DIR}"/dist/apache-flink-*.tar.gz)
 PYFLINK_LIBRARIES_PACKAGE_FILE=$(basename "${FLINK_PYTHON_DIR}"/apache-flink-libraries/dist/apache-flink-libraries-*.tar.gz)
 echo ${PYFLINK_PACKAGE_FILE}
