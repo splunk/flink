@@ -134,8 +134,11 @@ public class MiniCluster implements AutoCloseableAsync {
 
     private final Time rpcTimeout;
 
+
     @GuardedBy("lock")
     private final List<TaskExecutor> taskManagers;
+
+    private boolean cleanupHaData;
 
     private final TerminatingFatalErrorHandlerFactory
             taskManagerTerminatingFatalErrorHandlerFactory =
@@ -264,17 +267,19 @@ public class MiniCluster implements AutoCloseableAsync {
     }
 
     /**
-     * Starts the mini cluster, based on the configured properties.
+     * Starts the mini cluster with an option to preserve HA data during shutdown due to errors.
      *
      * @throws Exception This method passes on any exception that occurs during the startup of the
      *     mini cluster.
      */
-    public void start() throws Exception {
+    public void start(boolean cleanupHaData) throws Exception {
         synchronized (lock) {
             checkState(!running, "MiniCluster is already running");
 
             LOG.info("Starting Flink Mini Cluster");
             LOG.debug("Using configuration {}", miniClusterConfiguration);
+
+            this.cleanupHaData = cleanupHaData;
 
             final Configuration configuration = miniClusterConfiguration.getConfiguration();
             final boolean useSingleRpcService =
@@ -375,7 +380,8 @@ public class MiniCluster implements AutoCloseableAsync {
                 setupDispatcherResourceManagerComponents(
                         configuration,
                         dispatcherResourceManagerComponentRpcServiceFactory,
-                        metricQueryServiceRetriever);
+                        metricQueryServiceRetriever,
+                        cleanupHaData);
 
                 resourceManagerLeaderRetriever = haServices.getResourceManagerLeaderRetriever();
                 dispatcherLeaderRetriever = haServices.getDispatcherLeaderRetriever();
@@ -404,7 +410,7 @@ public class MiniCluster implements AutoCloseableAsync {
             } catch (Exception e) {
                 // cleanup everything
                 try {
-                    close();
+                    shutdownAsync(cleanupHaData);
                 } catch (Exception ee) {
                     e.addSuppressed(ee);
                 }
@@ -421,11 +427,16 @@ public class MiniCluster implements AutoCloseableAsync {
         }
     }
 
+    public void start() throws Exception {
+        start(true);
+    }
+
     @GuardedBy("lock")
     private void setupDispatcherResourceManagerComponents(
             Configuration configuration,
             RpcServiceFactory dispatcherResourceManagerComponentRpcServiceFactory,
-            MetricQueryServiceRetriever metricQueryServiceRetriever)
+            MetricQueryServiceRetriever metricQueryServiceRetriever,
+            boolean cleanupHaData)
             throws Exception {
         dispatcherResourceManagerComponents.addAll(
                 createDispatcherResourceManagerComponents(
@@ -436,7 +447,7 @@ public class MiniCluster implements AutoCloseableAsync {
                         heartbeatServices,
                         metricRegistry,
                         metricQueryServiceRetriever,
-                        new ShutDownFatalErrorHandler()));
+                        new ShutDownFatalErrorHandler(cleanupHaData)));
 
         final Collection<CompletableFuture<ApplicationStatus>> shutDownFutures =
                 new ArrayList<>(dispatcherResourceManagerComponents.size());
@@ -521,17 +532,7 @@ public class MiniCluster implements AutoCloseableAsync {
         }
     }
 
-    /**
-     * Shuts down the mini cluster, failing all currently executing jobs. The mini cluster can be
-     * started again by calling the {@link #start()} method again.
-     *
-     * <p>This method shuts down all started services and components, even if an exception occurs in
-     * the process of shutting down some component.
-     *
-     * @return Future which is completed once the MiniCluster has been completely shut down
-     */
-    @Override
-    public CompletableFuture<Void> closeAsync() {
+    private CompletableFuture<Void> shutdownAsync(boolean cleanupHaData) {
         synchronized (lock) {
             if (running) {
                 LOG.info("Shutting down Flink Mini Cluster");
@@ -562,7 +563,7 @@ public class MiniCluster implements AutoCloseableAsync {
                     final CompletableFuture<Void> remainingServicesTerminationFuture =
                             FutureUtils.runAfterwards(
                                     rpcServicesTerminationFuture,
-                                    this::terminateMiniClusterServices);
+                                    () -> terminateMiniClusterServices(cleanupHaData));
 
                     final CompletableFuture<Void> executorsTerminationFuture =
                             FutureUtils.composeAfterwards(
@@ -585,6 +586,20 @@ public class MiniCluster implements AutoCloseableAsync {
 
             return terminationFuture;
         }
+    }
+
+    /**
+     * Shuts down the mini cluster, failing all currently executing jobs.
+     * The mini cluster can be started again by calling the {@link #start()} method again.
+     *
+     * <p>This method shuts down all started services and components,
+     * even if an exception occurs in the process of shutting down some component.
+     *
+     * @return Future which is completed once the MiniCluster has been completely shut down
+     */
+    @Override
+    public CompletableFuture<Void> closeAsync() {
+        return shutdownAsync(cleanupHaData);
     }
 
     private CompletableFuture<Void> closeMetricSystem() {
@@ -1022,7 +1037,7 @@ public class MiniCluster implements AutoCloseableAsync {
                 });
     }
 
-    private void terminateMiniClusterServices() throws Exception {
+    private void terminateMiniClusterServices(boolean cleanupHaData) throws Exception {
         // collect the first exception, but continue and add all successive
         // exceptions as suppressed
         Exception exception = null;
@@ -1050,7 +1065,11 @@ public class MiniCluster implements AutoCloseableAsync {
             // shut down high-availability services
             if (haServices != null) {
                 try {
-                    haServices.closeAndCleanupAllData();
+                    if (cleanupHaData) {
+                        haServices.closeAndCleanupAllData();
+                    } else {
+                        haServices.close();
+                    }
                 } catch (Exception e) {
                     exception = ExceptionUtils.firstOrSuppressed(e, exception);
                 }
@@ -1179,11 +1198,16 @@ public class MiniCluster implements AutoCloseableAsync {
     }
 
     private class ShutDownFatalErrorHandler implements FatalErrorHandler {
+        private boolean cleanupHaData;
+
+        ShutDownFatalErrorHandler(boolean cleanupHaData) {
+            this.cleanupHaData = cleanupHaData;
+        }
 
         @Override
         public void onFatalError(Throwable exception) {
             LOG.warn("Error in MiniCluster. Shutting the MiniCluster down.", exception);
-            closeAsync();
+            shutdownAsync(cleanupHaData);
         }
     }
 
