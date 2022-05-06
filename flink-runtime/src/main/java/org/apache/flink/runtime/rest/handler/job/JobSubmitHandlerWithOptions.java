@@ -26,19 +26,16 @@ import org.apache.flink.core.fs.Path;
 import org.apache.flink.runtime.dispatcher.DispatcherGateway;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.jobgraph.JobVertex;
+import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
-import org.apache.flink.runtime.rest.handler.RestHandlerException;
 import org.apache.flink.runtime.rest.messages.job.JobSubmitRequestWithOptionsBody;
 import org.apache.flink.runtime.rest.messages.job.JobSubmitWithOptionsHeaders;
 import org.apache.flink.runtime.webmonitor.retriever.GatewayRetriever;
-
-import org.apache.flink.shaded.netty4.io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,30 +110,16 @@ public class JobSubmitHandlerWithOptions
 
     private void setOperatorParallelisms(
             JobGraph jobGraph, Map<String, Integer> operatorParallelismChangeMap) {
-        if (jobGraph.getNumberOfVertices() != operatorParallelismChangeMap.size()) {
-            throw new CompletionException(
-                    new RestHandlerException(
-                            "Operator parallelism change map must contain all vertices of corresponding job graph.",
-                            HttpResponseStatus.BAD_REQUEST));
+        for (Map.Entry<String, Integer> override : operatorParallelismChangeMap.entrySet()) {
+            String vertexId = override.getKey();
+            Integer parallelism = override.getValue();
+            JobVertex jobVertex = jobGraph.findVertexByID(JobVertexID.fromHexString(vertexId));
+            if (jobVertex != null) {
+                jobVertex.setParallelism(parallelism);
+            } else {
+                log.warn("JobGraph changed. Task {} not present anymore. Skipping parallelism override {}", vertexId, parallelism);
+            }
         }
-
-        jobGraph.getVertices()
-                .forEach(v -> setParallelismForJobVertex(v, operatorParallelismChangeMap));
-    }
-
-    private void setParallelismForJobVertex(
-            JobVertex jobVertex, Map<String, Integer> operatorParallelismChangeMap) {
-        String jobVertexId = jobVertex.getID().toHexString();
-        if (!operatorParallelismChangeMap.containsKey(jobVertexId)) {
-            throw new CompletionException(
-                    new RestHandlerException(
-                            String.format(
-                                    "Vertex ID %s of job graph not found in provided operator parallelism change map. "
-                                            + "Map must contain all job vertices of job graph.",
-                                    jobVertexId),
-                            HttpResponseStatus.BAD_REQUEST));
-        }
-        jobVertex.setParallelism(operatorParallelismChangeMap.get(jobVertexId));
     }
 
     private void scaleOperatorParallelismsToAvailableTaskSlots(JobGraph jobGraph) {
