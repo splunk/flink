@@ -105,7 +105,8 @@ public class MiniClusterEntryPoint {
             SecurityUtils.getInstalledContext()
                     .runSecured(
                             () -> {
-                                miniCluster.start();
+                                // don't clean up HA data when MiniCluster fails
+                                miniCluster.start(false);
                                 return null;
                             });
         } catch (Throwable t) {

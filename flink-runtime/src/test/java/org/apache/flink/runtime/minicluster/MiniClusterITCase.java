@@ -18,10 +18,13 @@
 
 package org.apache.flink.runtime.minicluster;
 
+import org.apache.curator.test.TestingServer;
+
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.HighAvailabilityOptions;
 import org.apache.flink.configuration.JobManagerOptions;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.core.testutils.FlinkMatchers;
@@ -48,8 +51,13 @@ import org.apache.flink.runtime.testtasks.NoOpInvokable;
 import org.apache.flink.runtime.testtasks.WaitingNoOpInvokable;
 import org.apache.flink.util.TestLogger;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -59,12 +67,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.flink.util.ExceptionUtils.findThrowable;
 import static org.apache.flink.util.ExceptionUtils.findThrowableWithMessage;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /** Integration test cases for the {@link MiniCluster}. */
 public class MiniClusterITCase extends TestLogger {
+
+    private static TestingServer zkServer;
+    @ClassRule public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @BeforeClass
+    public static void setup() throws Exception {
+        zkServer = new TestingServer();
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+        zkServer.stop();
+        zkServer.close();
+    }
 
     @Test
     public void runJobWithSingleRpcService() throws Exception {
@@ -682,6 +705,49 @@ public class MiniClusterITCase extends TestLogger {
                         e,
                         FlinkMatchers.containsMessage(
                                 "Java heap space. A heap space-related out-of-memory error has occurred."));
+            }
+        }
+    }
+
+    @Test
+    public void testCleanUpHaDataWhenClosingMiniCluster() throws Exception {
+        final int numOfTMs = 3;
+        final int slotsPerTM = 7;
+        String haDataFolderSuffix = "default";
+
+        Configuration configuration = getDefaultConfiguration();
+        configuration.setString(HighAvailabilityOptions.HA_ZOOKEEPER_QUORUM, zkServer.getConnectString());
+        configuration.setString(HighAvailabilityOptions.HA_MODE, "ZOOKEEPER");
+
+        for (boolean cleanupHaData : new boolean[] {true, false}) {
+            File haDataFolder = temporaryFolder.newFolder();
+            File fullHaDataFolder = new File(haDataFolder, haDataFolderSuffix);
+
+            configuration.setString(HighAvailabilityOptions.HA_STORAGE_PATH, haDataFolder.toString());
+
+            final MiniClusterConfiguration cfg =
+                    new MiniClusterConfiguration.Builder()
+                            .setNumTaskManagers(numOfTMs)
+                            .setNumSlotsPerTaskManager(slotsPerTM)
+                            .setRpcServiceSharing(RpcServiceSharing.DEDICATED)
+                            .setConfiguration(configuration)
+                            .build();
+
+            try (final MiniCluster miniCluster = new MiniCluster(cfg)) {
+
+                // minicluster start will add ha data
+                miniCluster.start(cleanupHaData);
+
+                // prevent error of leader election not finished during start
+                miniCluster.getDispatcherGatewayFuture().get();
+
+                // check that ha data got added
+                assertTrue(fullHaDataFolder.list().length > 0);
+
+                miniCluster.close();
+
+                // check if ha data got removed or not according to cleanup flag
+                assertNotEquals(cleanupHaData, fullHaDataFolder.list().length > 0);
             }
         }
     }
