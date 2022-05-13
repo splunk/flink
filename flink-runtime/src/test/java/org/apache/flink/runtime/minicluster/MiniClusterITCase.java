@@ -18,8 +18,6 @@
 
 package org.apache.flink.runtime.minicluster;
 
-import org.apache.curator.test.TestingServer;
-
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
@@ -51,6 +49,7 @@ import org.apache.flink.runtime.testtasks.NoOpInvokable;
 import org.apache.flink.runtime.testtasks.WaitingNoOpInvokable;
 import org.apache.flink.util.TestLogger;
 
+import org.apache.curator.test.TestingServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -716,14 +715,16 @@ public class MiniClusterITCase extends TestLogger {
         String haDataFolderSuffix = "default";
 
         Configuration configuration = getDefaultConfiguration();
-        configuration.setString(HighAvailabilityOptions.HA_ZOOKEEPER_QUORUM, zkServer.getConnectString());
+        configuration.setString(
+                HighAvailabilityOptions.HA_ZOOKEEPER_QUORUM, zkServer.getConnectString());
         configuration.setString(HighAvailabilityOptions.HA_MODE, "ZOOKEEPER");
 
         for (boolean cleanupHaData : new boolean[] {true, false}) {
             File haDataFolder = temporaryFolder.newFolder();
             File fullHaDataFolder = new File(haDataFolder, haDataFolderSuffix);
 
-            configuration.setString(HighAvailabilityOptions.HA_STORAGE_PATH, haDataFolder.toString());
+            configuration.setString(
+                    HighAvailabilityOptions.HA_STORAGE_PATH, haDataFolder.toString());
 
             final MiniClusterConfiguration cfg =
                     new MiniClusterConfiguration.Builder()
