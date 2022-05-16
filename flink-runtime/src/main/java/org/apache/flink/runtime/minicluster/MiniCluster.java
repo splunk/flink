@@ -134,7 +134,6 @@ public class MiniCluster implements AutoCloseableAsync {
 
     private final Time rpcTimeout;
 
-
     @GuardedBy("lock")
     private final List<TaskExecutor> taskManagers;
 
@@ -589,11 +588,11 @@ public class MiniCluster implements AutoCloseableAsync {
     }
 
     /**
-     * Shuts down the mini cluster, failing all currently executing jobs.
-     * The mini cluster can be started again by calling the {@link #start()} method again.
+     * Shuts down the mini cluster, failing all currently executing jobs. The mini cluster can be
+     * started again by calling the {@link #start()} method again.
      *
-     * <p>This method shuts down all started services and components,
-     * even if an exception occurs in the process of shutting down some component.
+     * <p>This method shuts down all started services and components, even if an exception occurs in
+     * the process of shutting down some component.
      *
      * @return Future which is completed once the MiniCluster has been completely shut down
      */

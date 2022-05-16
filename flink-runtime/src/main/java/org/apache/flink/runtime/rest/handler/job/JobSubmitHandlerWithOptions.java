@@ -117,7 +117,10 @@ public class JobSubmitHandlerWithOptions
             if (jobVertex != null) {
                 jobVertex.setParallelism(parallelism);
             } else {
-                log.warn("JobGraph changed. Task {} not present anymore. Skipping parallelism override {}", vertexId, parallelism);
+                log.warn(
+                        "JobGraph changed. Task {} not present anymore. Skipping parallelism override {}",
+                        vertexId,
+                        parallelism);
             }
         }
     }
