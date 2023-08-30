@@ -19,6 +19,10 @@ variables:
   DOCKER_IMAGE: 'docker-hub.repo.splunkdev.net/openjdk:8'
   MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss.SSS" 
   MAVEN_CLI_COMMON_OPTS: "-B -DskipTests -Dfindbugs.skip -Dcheckstyle.skip=true -Denforcer.skip=true -Drat.skip=true -Drat.ignoreErrors=true"
+  MAVEN_PROD_DEPLOYER_ROLE: "artifactory:v2/cloud/role/flink-mirror-maven-writer-role"
+  MAVEN_TEST_DEPLOYER_ROLE: "artifactory:v2/cloud/role/flink-mirror-maven-test-writer-role"
+  MAVEN_PROD_REPO: "https://repo.splunkdev.net/artifactory/maven"
+  MAVEN_TEST_REPO: "https://repo.splunkdev.net/artifactory/maven-test"
   REPOSITORY_SETTINGS: "-Dartifactory_user=$SVC_ANTIFRAUD_CI_USER -Dartifactory_pw=$SVC_ANTIFRAUD_CI_PWD"
 
 image: $DOCKER_IMAGE
@@ -29,6 +33,20 @@ stages:
 .upload_base: &upload_base
   stage: upload
   before_script:
+    - creds-helper init
+    - |
+      if [ "${CI_COMMIT_REF_PROTECTED}" == "true" ]; then
+        export MAVEN_ROLE=$MAVEN_PROD_DEPLOYER_ROLE
+        export MAVEN_REPO=$MAVEN_PROD_REPO
+      else
+        export MAVEN_ROLE=$MAVEN_TEST_DEPLOYER_ROLE
+        export MAVEN_REPO=$MAVEN_TEST_REPO
+      fi
+    - eval $(creds-helper artifactory --eval $MAVEN_ROLE)
+    - |
+      artifactoryUsername=$(echo $ARTIFACTORY_AUTHORIZATION | cut -d ':' -f 1)
+      artifactoryPassword=$(echo $ARTIFACTORY_AUTHORIZATION | cut -d ':' -f 2)
+      export REPOSITORY_SETTINGS="-Denv.ARTIFACTORY_USER_NAME=$artifactoryUsername -Denv.ARTIFACTORY_PASSWORD=$artifactoryPassword"
     - javac -version
     - 'wget https://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip'
     - unzip -qq apache-maven-3.2.5-bin.zip
@@ -51,15 +69,15 @@ stages:
     # Install shaded Jackson artifacts
     - su -c "cd flink-shaded-jackson-parent && $MVN -B install -DskipTests -Dfindbugs.skip -Dcheckstyle.skip -Denforcer.skip -Drat.skip"
     # upload flink artifacts
-    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com::default::https://repo.splunk.com/artifactory/maven-splunk-local $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=artifactory::default::$MAVEN_REPO $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # create and upload tarball
     - mkdir $TARBALL_VERSION
     - cp -r flink-dist/target/flink-*-bin/flink-*/* $TARBALL_VERSION
     - mkdir build-target/deploy 
     - tar -czf build-target/deploy/${TARBALL_VERSION}.tgz $TARBALL_VERSION
     # this will upload the release tarball jar. The jar will be uploaded to the artifactId folder, eg
-    #   https://repo.splunk.com/artifactory/maven-splunk-local/org/apache/flink/flink-release/<version>/
-    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Durl=https://repo.splunk.com/artifactory/maven-splunk-local -DrepositoryId=releases.repo.splunk.com -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy:deploy-file"
+    #   https://repo.splunkdev.net/artifactory/maven-splunk-local/org/apache/flink/flink-release/<version>/
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Durl=$MAVEN_REPO -DrepositoryId=artifactory -DgroupId=org.apache.flink -DartifactId=flink-release -Dversion=${TARBALL_VERSION} -Dpackaging=tar.gz -DgeneratePom=true -Dfile=build-target/deploy/${TARBALL_VERSION}.tgz $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy:deploy-file"
 
 upload:local:
   <<: *upload_base
@@ -80,8 +98,8 @@ upload:external:
     REPOSITORY_SETTINGS: "-Dartifactory_user=${ARTIFACTORY_USER} -Dartifactory_pw=${ARTIFACTORY_PASS}"
   script:
     # Upload flink shaded jackson artifacts
-    - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+    - su -c "cd flink-shaded-jackson-parent && $MVN $MAVEN_CLI_COMMON_OPTS -DaltDeploymentRepository=artifactory::default::$MAVEN_REPO $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
     # Upload to external repo, for external upload we don't need to upload the tarball
-    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=releases.repo.splunk.com.external::default::https://repo.splunk.com/artifactory/maven-splunk-release $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
+    - su -c "$MVN $MAVEN_CLI_COMMON_OPTS -Pdocs-and-source -DaltDeploymentRepository=artifactory::default::$MAVEN_REPO $MAVEN_CLI_DEPLOY_OPTS $CUSTOM_JOB_OPTS deploy"
   only:
     - /^release-.*-splunk.*$/
