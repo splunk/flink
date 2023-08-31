@@ -48,11 +48,11 @@ stages:
       artifactoryPassword=$(echo $ARTIFACTORY_AUTHORIZATION | cut -d ':' -f 2)
       export REPOSITORY_SETTINGS="-Denv.ARTIFACTORY_USER_NAME=$artifactoryUsername -Denv.ARTIFACTORY_PASSWORD=$artifactoryPassword"
     - javac -version
-    - 'wget https://archive.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip'
-    - unzip -qq apache-maven-3.2.5-bin.zip
-    - rm apache-maven-3.2.5-bin.zip
-    - apache-maven-3.2.5/bin/mvn --version
-    - export MVN="$PWD/apache-maven-3.2.5/bin/mvn"
+    - 'wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.zip'
+    - unzip -qq apache-maven-3.8.6-bin.zip
+    - rm apache-maven-3.8.6-bin.zip
+    - apache-maven-3.8.6/bin/mvn --version
+    - export MVN="$PWD/apache-maven-3.8.6/bin/mvn"
     # change flink version for PR branches to upload test artifacts
     - |
       current_ver=$($MVN help:evaluate -Dexpression=project.version -q -DforceStdout)
