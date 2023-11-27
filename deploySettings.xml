@@ -22,21 +22,64 @@ under the License.
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <servers>
-    <!--
+   <servers>
+   <!--
     Settings for the Splunk Artifactory servers.
     The user and password properties must be passed in as -D properties.
-    -->
-    <server>
-      <id>releases.repo.splunk.com</id>
-      <username>${artifactory_user}</username>
-      <password>${artifactory_pw}</password>
-    </server>
-    <server>
-      <id>releases.repo.splunk.com.external</id>
-      <username>${artifactory_user}</username>
-      <password>${artifactory_pw}</password>
-    </server>
-  </servers>
+   -->
+      <server>
+         <id>artifactory</id>
+         <username>${env.ARTIFACTORY_USER_NAME}</username>
+         <password>${env.ARTIFACTORY_PASSWORD}</password>
+      </server>
+   </servers>
+
+   <profiles>
+      <profile>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <id>main</id>
+
+         <repositories>
+               <repository>
+                  <id>artifactory</id>
+                  <url>https://repo.splunkdev.net/artifactory/maven</url>
+                  <snapshots>
+                     <enabled>false</enabled>
+                  </snapshots>
+               </repository>
+               <repository>
+                  <id>artifactory</id>
+                  <url>https://repo.splunkdev.net/artifactory/maven-test</url>
+                  <snapshots>
+                     <enabled>false</enabled>
+                  </snapshots>
+               </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>artifactory</id>
+               <url>https://repo.splunkdev.net/artifactory/maven</url>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+            </pluginRepository>
+            <pluginRepository>
+               <id>artifactory</id>
+               <url>https://repo.splunkdev.net/artifactory/maven-test</url>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+   </profiles>
 </settings>
 
