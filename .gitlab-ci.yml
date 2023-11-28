@@ -35,7 +35,7 @@ stages:
   before_script:
     - creds-helper init
     - |
-      if [ "${CI_COMMIT_REF_PROTECTED}" == "true" ]; then
+      if [[ "${CI_COMMIT_REF_PROTECTED}" == "true" || "${CI_COMMIT_TAG}" =~ ^release-[0-9] ]]; then
         export MAVEN_ROLE=$MAVEN_PROD_DEPLOYER_ROLE
         export MAVEN_REPO=$MAVEN_PROD_REPO
       else
