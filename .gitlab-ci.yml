@@ -82,6 +82,7 @@ upload:local:
   <<: *upload_base
   only:
     - /^release-.*-splunk.*$/
+  when: manual
 
 upload:PR:
   <<: *upload_base
