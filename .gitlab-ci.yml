@@ -42,7 +42,7 @@ stages:
         export MAVEN_ROLE=$MAVEN_TEST_DEPLOYER_ROLE
         export MAVEN_REPO=$MAVEN_TEST_REPO
       fi
-    - eval $(creds-helper artifactory --eval $MAVEN_ROLE)
+    - eval $(creds-helper artifactory --ttl 2h --eval $MAVEN_ROLE)
     - |
       artifactoryUsername=$(echo $ARTIFACTORY_AUTHORIZATION | cut -d ':' -f 1)
       artifactoryPassword=$(echo $ARTIFACTORY_AUTHORIZATION | cut -d ':' -f 2)
